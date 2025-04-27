@@ -1,0 +1,42 @@
+## Instructions for Resetting the Database
+
+### Option 1: Using psql (Command Line)
+
+1. Open a terminal or command prompt
+2. Navigate to the directory containing the reset_database.sql file
+3. Run the following command:
+
+```bash
+# Replace these values with your actual database connection details
+psql -h localhost -U your_username -d your_database_name -f reset_database.sql
+```
+
+You'll be prompted for your password if required.
+
+### Option 2: Using pgAdmin
+
+1. Open pgAdmin
+2. Connect to your database server
+3. Right-click on your database and select "Query Tool"
+4. Click the "Open File" button (or press Ctrl+O)
+5. Navigate to and select the reset_database.sql file
+6. Click the "Execute" button (or press F5)
+
+### Option 3: Using Docker (if your database is running in Docker)
+
+If your PostgreSQL database is running in a Docker container, you can use:
+
+```bash
+# Replace 'container_name' with your actual PostgreSQL container name
+cat reset_database.sql | docker exec -i container_name psql -U postgres -d your_database_name
+```
+
+### After Resetting the Database
+
+After running the script, you should:
+
+1. Restart your backend application to recreate the database schema
+2. The application should automatically create all necessary tables on startup
+3. You may need to recreate any initial seed data
+
+Note: Make absolutely sure you're running this on the correct database, as this operation cannot be undone!
