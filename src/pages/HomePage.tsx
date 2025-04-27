@@ -2,10 +2,8 @@ import { Layout } from "@/components/layout/Layout";
 import { MenuList } from "@/components/menu/MenuList";
 import { Button } from "@/components/ui/button";
 import { Coffee, ArrowRight } from "lucide-react";
-import { useTheme } from "@/contexts/ThemeContext";
 
 export function HomePage() {
-  const { isDarkMode } = useTheme();
 
   return (
     <Layout>

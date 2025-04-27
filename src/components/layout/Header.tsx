@@ -1,25 +1,22 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ShoppingCart, User, LogOut, Menu, X, Package, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { useTheme } from "@/contexts/ThemeContext";
 
 export function Header() {
   const { isAuthenticated, isAdmin, logout } = useAuth();
   const { totalItems } = useCart();
-  const { isDarkMode } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
 
   // Close profile menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      // Only close if the menu is open and the click is outside the menu
+      // Only close if the menu is open and the click is outside the menu and the profile button
       if (
         profileMenuOpen &&
         profileMenuRef.current &&
@@ -39,17 +36,12 @@ export function Header() {
     };
   }, [profileMenuOpen]);
 
-  // Handle navigation with menu closing
-  const handleNavigation = (e: React.MouseEvent, path: string) => {
-    e.stopPropagation(); // Stop event propagation
-    setProfileMenuOpen(false);
-    navigate(path);
-  };
+
 
   // Handle logout
   const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default behavior
     e.stopPropagation(); // Stop event propagation
-    setProfileMenuOpen(false);
     logout();
   };
 
@@ -118,39 +110,32 @@ export function Header() {
                 >
                   <User className="h-5 w-5" />
                 </Button>
-              </div>
-            ) : (
-              <Link to="/login">
-                <Button variant="outline" className="rounded-full">Login</Button>
-              </Link>
-            )}
 
-            {/* Profile Dropdown Menu - Positioned outside the button container */}
-            {isAuthenticated && profileMenuOpen && (
-              <div
-                className="absolute right-4 top-16 w-56 rounded-md shadow-lg bg-card border border-border z-50 animate-fade-in origin-top-right"
-                onClick={(e) => e.stopPropagation()} // Prevent clicks inside from closing the menu
-              >
+                {/* Profile Dropdown Menu - Inside the profileMenuRef container */}
+                {profileMenuOpen && (
+                  <div
+                    className="absolute right-0 top-12 w-56 rounded-md shadow-lg bg-card border border-border z-50 animate-fade-in origin-top-right"
+                  >
                     <div className="py-1 rounded-md bg-card" role="menu" aria-orientation="vertical">
                       <div className="px-4 py-3 border-b border-border">
                         <p className="text-sm font-medium">My Account</p>
                       </div>
 
-                      <button
+                      <Link
+                        to="/profile"
                         className="flex w-full items-center px-4 py-2 text-sm hover:bg-muted transition-colors text-left"
-                        onClick={(e) => handleNavigation(e, '/profile')}
                       >
                         <User className="mr-2 h-4 w-4 text-muted-foreground" />
                         Profile
-                      </button>
+                      </Link>
 
-                      <button
+                      <Link
+                        to="/orders"
                         className="flex w-full items-center px-4 py-2 text-sm hover:bg-muted transition-colors text-left"
-                        onClick={(e) => handleNavigation(e, '/orders')}
                       >
                         <Package className="mr-2 h-4 w-4 text-muted-foreground" />
                         My Orders
-                      </button>
+                      </Link>
 
                       {isAdmin && (
                         <>
@@ -159,21 +144,21 @@ export function Header() {
                             <p className="text-xs font-medium text-muted-foreground">Admin</p>
                           </div>
 
-                          <button
+                          <Link
+                            to="/admin/menu"
                             className="flex w-full items-center px-4 py-2 text-sm hover:bg-muted transition-colors text-left"
-                            onClick={(e) => handleNavigation(e, '/admin/menu')}
                           >
                             <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
                             Manage Menu
-                          </button>
+                          </Link>
 
-                          <button
+                          <Link
+                            to="/admin/orders"
                             className="flex w-full items-center px-4 py-2 text-sm hover:bg-muted transition-colors text-left"
-                            onClick={(e) => handleNavigation(e, '/admin/orders')}
                           >
                             <Package className="mr-2 h-4 w-4 text-muted-foreground" />
                             Manage Orders
-                          </button>
+                          </Link>
                         </>
                       )}
 
@@ -188,7 +173,13 @@ export function Header() {
                       </button>
                     </div>
                   </div>
-              )}
+                )}
+              </div>
+            ) : (
+              <Link to="/login">
+                <Button variant="outline" className="rounded-full">Login</Button>
+              </Link>
+            )}
 
             {/* Mobile menu button */}
             <Button

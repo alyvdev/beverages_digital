@@ -2,7 +2,6 @@ import { Plus, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MenuItem } from "@/types";
 import { useCart } from "@/contexts/CartContext";
-import { useTheme } from "@/contexts/ThemeContext";
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -10,7 +9,6 @@ interface MenuItemCardProps {
 
 export function MenuItemCard({ item }: MenuItemCardProps) {
   const { addItem } = useCart();
-  const { isDarkMode } = useTheme();
 
   const handleAddToCart = () => {
     addItem(item);

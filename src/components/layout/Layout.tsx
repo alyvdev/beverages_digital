@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { useTheme } from "@/contexts/ThemeContext";
 
 interface LayoutProps {
   children: ReactNode;
@@ -9,7 +8,6 @@ interface LayoutProps {
 }
 
 export function Layout({ children, fullWidth = false }: LayoutProps) {
-  const { isDarkMode } = useTheme();
 
   return (
     <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">

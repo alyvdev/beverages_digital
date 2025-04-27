@@ -1,25 +1,17 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { ordersApi } from "@/lib/api";
 
 export function CartSummary() {
   const { totalItems, totalPrice, getOrderItems, clearCart } = useCart();
-  const { isAuthenticated } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleCheckout = async () => {
     if (totalItems === 0) return;
-
-    // Redirect to login if not authenticated
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
 
     setIsSubmitting(true);
     setError(null);
@@ -34,13 +26,7 @@ export function CartSummary() {
       navigate(`/order-confirmation/${response.id}`);
     } catch (err) {
       console.error("Checkout error:", err);
-      if (err instanceof Error &&
-          (err.message.includes("401") ||
-           err.message.includes("credentials"))) {
-        setError("Authentication required. Please log in to complete your order.");
-      } else {
-        setError(err instanceof Error ? err.message : "Failed to place order");
-      }
+      setError(err instanceof Error ? err.message : "Failed to place order");
     } finally {
       setIsSubmitting(false);
     }
@@ -68,21 +54,13 @@ export function CartSummary() {
         </div>
       )}
 
-      {isAuthenticated ? (
-        <Button
-          className="w-full"
-          disabled={totalItems === 0 || isSubmitting}
-          onClick={handleCheckout}
-        >
-          {isSubmitting ? "Processing..." : "Checkout"}
-        </Button>
-      ) : (
-        <Link to="/login" className="block w-full">
-          <Button className="w-full">
-            Login to Checkout
-          </Button>
-        </Link>
-      )}
+      <Button
+        className="w-full"
+        disabled={totalItems === 0 || isSubmitting}
+        onClick={handleCheckout}
+      >
+        {isSubmitting ? "Processing..." : "Checkout"}
+      </Button>
 
       <Button
         variant="outline"

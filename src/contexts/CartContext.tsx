@@ -1,25 +1,8 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { MenuItem, OrderItemCreate } from "@/types";
-
-interface CartItem {
-  menuItem: MenuItem;
-  quantity: number;
-}
-
-interface CartContextType {
-  items: CartItem[];
-  addItem: (menuItem: MenuItem, quantity?: number) => void;
-  removeItem: (menuItemId: string) => void;
-  updateQuantity: (menuItemId: string, quantity: number) => void;
-  clearCart: () => void;
-  totalItems: number;
-  totalPrice: number;
-  getOrderItems: () => OrderItemCreate[];
-}
+import { CartItem, CartContextType, CART_STORAGE_KEY } from "./cart-utils";
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
-
-const CART_STORAGE_KEY = "beverages_cart";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -110,6 +93,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCart() {
   const context = useContext(CartContext);
   if (context === undefined) {

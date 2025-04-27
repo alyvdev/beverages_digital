@@ -5,42 +5,26 @@ import { useAuth } from "@/contexts/AuthContext";
 import { User, Mail, Calendar, Package, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 
+interface Order {
+  id: string;
+  date: string;
+  status: string;
+  total: number;
+}
+
 export function ProfilePage() {
   const { user, isAdmin, logout } = useAuth();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data for demonstration
+  // Fetch orders data
   useEffect(() => {
     // In a real app, you would fetch this data from your API
-    const mockOrders = [
-      {
-        id: "ord-001",
-        date: "2025-04-25",
-        status: "completed",
-        total: 12.50,
-        items: 3
-      },
-      {
-        id: "ord-002",
-        date: "2025-04-22",
-        status: "completed",
-        total: 8.75,
-        items: 2
-      },
-      {
-        id: "ord-003",
-        date: "2025-04-18",
-        status: "completed",
-        total: 15.20,
-        items: 4
-      }
-    ];
-    
+    // For now, we'll just set an empty array
     setTimeout(() => {
-      setOrders(mockOrders);
+      setOrders([]);
       setIsLoading(false);
-    }, 800);
+    }, 300);
   }, []);
 
   return (
@@ -67,7 +51,7 @@ export function ProfilePage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="p-4">
                 <nav className="space-y-1">
                   <Link to="/profile" className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-primary/10 text-primary">
@@ -100,10 +84,10 @@ export function ProfilePage() {
                     </>
                   )}
                 </nav>
-                
+
                 <div className="mt-6 pt-4 border-t border-border">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={logout}
                   >
@@ -114,7 +98,7 @@ export function ProfilePage() {
               </div>
             </div>
           </div>
-          
+
           {/* Main Content */}
           <div className="w-full md:w-2/3 lg:w-3/4 space-y-6">
             {/* Profile Overview */}
@@ -140,14 +124,14 @@ export function ProfilePage() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Member Since</p>
-                        <p className="text-2xl font-bold">April 2025</p>
+                        <p className="text-2xl font-bold">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             {/* Recent Orders */}
             <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
               <div className="p-6">
@@ -157,7 +141,7 @@ export function ProfilePage() {
                     View All
                   </Link>
                 </div>
-                
+
                 {isLoading ? (
                   <div className="flex justify-center items-center h-40">
                     <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -186,7 +170,7 @@ export function ProfilePage() {
                             </td>
                             <td className="py-3 px-4 text-right">${order.total.toFixed(2)}</td>
                             <td className="py-3 px-4 text-center">
-                              <Link 
+                              <Link
                                 to={`/order-confirmation/${order.id}`}
                                 className="text-primary hover:text-primary/80 text-sm"
                               >

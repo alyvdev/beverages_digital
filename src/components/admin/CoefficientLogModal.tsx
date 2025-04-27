@@ -17,44 +17,6 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
   const [activeTab, setActiveTab] = useState<'list' | 'graph'>('graph');
   const [isAuthError, setIsAuthError] = useState(false);
 
-  // Generate mock data for demonstration when API fails
-  const generateMockData = (): CoefficientLog[] => {
-    const now = new Date();
-    const mockLogs: CoefficientLog[] = [];
-
-    // Create a series of mock logs with different timestamps and reasons
-    for (let i = 0; i < 5; i++) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-
-      const prevCoef = 1 + (i * 0.05);
-      const newCoef = prevCoef + (i % 2 === 0 ? 0.05 : -0.03);
-
-      mockLogs.push({
-        id: `mock-${i}`,
-        item_id: itemId,
-        timestamp: date.toISOString(),
-        previous_coefficient: prevCoef,
-        new_coefficient: newCoef,
-        change_reason: i % 3 === 0
-          ? ChangeReason.ORDERED
-          : i % 3 === 1
-            ? ChangeReason.DECAYED
-            : ChangeReason.MANUAL_UPDATE,
-        menu_item: {
-          id: itemId,
-          name: "Mock Item",
-          category: "Mock Category",
-          base_price: 10,
-          coefficient: newCoef,
-          final_price: 10 * newCoef
-        }
-      });
-    }
-
-    return mockLogs;
-  };
-
   useEffect(() => {
     const fetchLogs = async () => {
       try {
@@ -71,6 +33,45 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
              err.message.includes("token") ||
              err.message.includes("Server error"))) {
           setIsAuthError(true);
+
+          // Generate mock data for demonstration
+          const generateMockData = (): CoefficientLog[] => {
+            const now = new Date();
+            const mockLogs: CoefficientLog[] = [];
+
+            // Create a series of mock logs with different timestamps and reasons
+            for (let i = 0; i < 5; i++) {
+              const date = new Date(now);
+              date.setDate(date.getDate() - i);
+
+              const prevCoef = 1 + (i * 0.05);
+              const newCoef = prevCoef + (i % 2 === 0 ? 0.05 : -0.03);
+
+              mockLogs.push({
+                id: `mock-${i}`,
+                item_id: itemId,
+                timestamp: date.toISOString(),
+                previous_coefficient: prevCoef,
+                new_coefficient: newCoef,
+                change_reason: i % 3 === 0
+                  ? ChangeReason.ORDERED
+                  : i % 3 === 1
+                    ? ChangeReason.DECAYED
+                    : ChangeReason.MANUAL_UPDATE,
+                menu_item: {
+                  id: itemId,
+                  name: "Mock Item",
+                  category: "Mock Category",
+                  base_price: 10,
+                  coefficient: newCoef,
+                  final_price: 10 * newCoef
+                }
+              });
+            }
+
+            return mockLogs;
+          };
+
           // Use mock data for demonstration
           setLogs(generateMockData());
           setError("Authentication required. Showing sample data for demonstration.");

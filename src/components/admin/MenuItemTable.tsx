@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, BarChart2 } from "lucide-react";
+import { Edit, BarChart2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MenuItem } from "@/types";
 import { menuItemsApi } from "@/lib/api";
@@ -71,6 +71,42 @@ export function MenuItemTable() {
         }
       } else {
         setError(`Failed to ${action} item due to an unknown error.`);
+      }
+    }
+  };
+
+  const handleDeleteItem = async (item: MenuItem) => {
+    const confirmMessage = `Are you sure you want to delete "${item.name}"? This action cannot be undone.`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      await menuItemsApi.delete(item.id);
+
+      // Remove the item from the list
+      setMenuItems((items) => items.filter((i) => i.id !== item.id));
+    } catch (err) {
+      console.error("Error deleting menu item:", err);
+
+      // Provide more specific error messages based on the error
+      if (err instanceof Error) {
+        const errorMsg = err.message.toLowerCase();
+
+        if (errorMsg.includes("authentication") ||
+            errorMsg.includes("credentials") ||
+            errorMsg.includes("log in") ||
+            errorMsg.includes("401")) {
+          setError(
+            "Authentication required: You need to be logged in as an admin to delete menu items. " +
+            "Please log out and log in again with admin credentials."
+          );
+        } else {
+          setError(`Failed to delete item: ${err.message}`);
+        }
+      } else {
+        setError("Failed to delete item due to an unknown error.");
       }
     }
   };
@@ -183,6 +219,15 @@ export function MenuItemTable() {
                       onClick={() => setShowCoefficientLog(item.id)}
                     >
                       <BarChart2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => handleDeleteItem(item)}
+                      title="Delete item"
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </td>

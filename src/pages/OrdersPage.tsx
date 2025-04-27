@@ -4,52 +4,32 @@ import { Link } from "react-router-dom";
 import { Package, Filter, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  date: string;
+  status: string;
+  total: number;
+  items: OrderItem[];
+}
+
 export function OrdersPage() {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data for demonstration
+  // Fetch orders data
   useEffect(() => {
     // In a real app, you would fetch this data from your API
-    const mockOrders = [
-      {
-        id: "ord-001",
-        date: "2025-04-25",
-        status: "completed",
-        total: 12.50,
-        items: [
-          { name: "Coffee", quantity: 1, price: 2.50 },
-          { name: "Tea", quantity: 2, price: 5.00 },
-          { name: "Water", quantity: 1, price: 5.00 }
-        ]
-      },
-      {
-        id: "ord-002",
-        date: "2025-04-22",
-        status: "completed",
-        total: 8.75,
-        items: [
-          { name: "Smoothie", quantity: 1, price: 4.25 },
-          { name: "Coffee", quantity: 1, price: 4.50 }
-        ]
-      },
-      {
-        id: "ord-003",
-        date: "2025-04-18",
-        status: "completed",
-        total: 15.20,
-        items: [
-          { name: "Latte", quantity: 2, price: 10.00 },
-          { name: "Water", quantity: 1, price: 1.20 },
-          { name: "Tea", quantity: 1, price: 4.00 }
-        ]
-      }
-    ];
-    
+    // For now, we'll just set an empty array
     setTimeout(() => {
-      setOrders(mockOrders);
+      setOrders([]);
       setIsLoading(false);
-    }, 800);
+    }, 300);
   }, []);
 
   return (
@@ -60,23 +40,23 @@ export function OrdersPage() {
             <h1 className="text-3xl font-bold mb-2">My Orders</h1>
             <p className="text-muted-foreground">View and track your order history</p>
           </div>
-          
+
           <div className="flex gap-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input 
-                type="text" 
-                placeholder="Search orders..." 
+              <input
+                type="text"
+                placeholder="Search orders..."
                 className="pl-9 pr-4 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
-            
+
             <Button variant="outline" size="icon">
               <Filter className="h-4 w-4" />
             </Button>
           </div>
         </div>
-        
+
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="flex flex-col items-center">
@@ -99,17 +79,17 @@ export function OrdersPage() {
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">Placed on {order.date}</p>
                     </div>
-                    
+
                     <div className="mt-4 md:mt-0">
                       <p className="text-sm text-muted-foreground">Total Amount</p>
                       <p className="text-xl font-bold">${order.total.toFixed(2)}</p>
                     </div>
                   </div>
-                  
+
                   <div className="border-t border-border pt-4">
                     <h4 className="text-sm font-medium mb-2">Order Items</h4>
                     <ul className="space-y-2">
-                      {order.items.map((item: any, index: number) => (
+                      {order.items.map((item, index) => (
                         <li key={index} className="flex justify-between text-sm">
                           <span>{item.quantity}x {item.name}</span>
                           <span>${item.price.toFixed(2)}</span>
@@ -117,9 +97,9 @@ export function OrdersPage() {
                       ))}
                     </ul>
                   </div>
-                  
+
                   <div className="mt-6 flex justify-end">
-                    <Link 
+                    <Link
                       to={`/order-confirmation/${order.id}`}
                       className="text-primary hover:text-primary/80 text-sm font-medium"
                     >

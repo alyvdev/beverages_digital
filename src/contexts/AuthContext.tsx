@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
 import { authApi } from "@/lib/api";
 import { LoginRequest, User } from "@/types";
 
@@ -7,7 +14,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (data: LoginRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<boolean | void>;
   logout: () => void;
 }
 
@@ -17,28 +24,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is already authenticated on mount
+  const logout = useCallback(() => {
+    setUser(null);
+
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("authTimestamp");
+
+    document.cookie =
+      "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie =
+      "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  }, []);
+
+  const login = async (data: LoginRequest) => {
+    setIsLoading(true);
+
+    try {
+      document.cookie =
+        "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie =
+        "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+      const response = await authApi.login(data);
+
+      localStorage.setItem("userEmail", data.email);
+
+      localStorage.setItem("authTimestamp", Date.now().toString());
+
+      setUser({
+        id: response.user_id || "authenticated",
+        email: data.email,
+
+        is_admin: true,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Skip token refresh on initial load to avoid unnecessary errors
-        // Instead, check if we have a saved email in localStorage
         const savedEmail = localStorage.getItem("userEmail");
-        const adminEmail = "abil.samedov502@gmail.com"; // Admin email from backend
+        const authTimestamp = localStorage.getItem("authTimestamp");
 
-        if (savedEmail) {
-          // If we have a saved email, consider the user authenticated
+        const isAuthValid =
+          authTimestamp &&
+          Date.now() - parseInt(authTimestamp) < 24 * 60 * 60 * 1000;
+
+        if (savedEmail && isAuthValid) {
           setUser({
             id: "authenticated",
             email: savedEmail,
-            is_admin: savedEmail === adminEmail
+            is_admin: true,
           });
         } else {
-          // No saved email, user is not authenticated
           setUser(null);
         }
       } catch (error) {
-        // Handle any other errors
         console.error("Authentication check failed:", error);
         setUser(null);
       } finally {
@@ -49,72 +97,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = async (data: LoginRequest) => {
-    setIsLoading(true);
-    try {
-      // Special case for admin login
-      const adminEmail = "abil.samedov502@gmail.com";
-      const adminPassword = "beveratesadmin";
+  useEffect(() => {
+    if (!user) return;
 
-      if (data.email === adminEmail && data.password === adminPassword) {
-        try {
-          // Try to login with the API
-          const response = await authApi.login(data);
+    const checkTokenValidity = async () => {};
 
-          // Store email in localStorage for persistence
-          localStorage.setItem("userEmail", data.email);
+    checkTokenValidity();
 
-          setUser({
-            id: response.user_id || "admin-user",
-            email: data.email,
-            is_admin: true,
-          });
-        } catch (apiError) {
-          console.warn("API login failed, but using admin credentials - allowing login", apiError);
+    const intervalId = setInterval(checkTokenValidity, 30000);
 
-          // Store email in localStorage for persistence
-          localStorage.setItem("userEmail", data.email);
-
-          // Set admin user even if API call fails
-          setUser({
-            id: "admin-user",
-            email: data.email,
-            is_admin: true,
-          });
-        }
-      } else {
-        // For non-admin users, API must succeed
-        const response = await authApi.login(data);
-
-        // Store email in localStorage for persistence
-        localStorage.setItem("userEmail", data.email);
-
-        setUser({
-          id: response.user_id,
-          email: data.email,
-          is_admin: false,
-        });
-      }
-    } catch (error) {
-      console.error("Login failed:", error);
-      throw error; // Re-throw to be caught by the login form
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const logout = () => {
-    // In a real app, we would call a logout endpoint
-    // For now, just clear the user state
-    setUser(null);
-
-    // Clear localStorage
-    localStorage.removeItem("userEmail");
-
-    // Clear cookies by setting them to expire
-    document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-  };
+    return () => clearInterval(intervalId);
+  }, [user]);
 
   const value = {
     user,
@@ -128,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

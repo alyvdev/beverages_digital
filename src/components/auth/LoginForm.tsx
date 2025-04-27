@@ -18,15 +18,17 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      await login({ email, password });
+      const success = await login({ email, password });
 
-      // Redirect to admin page if it's the admin email
-      if (email === "abil.samedov502@gmail.com") {
-        navigate("/admin/menu");
-      } else {
-        navigate("/");
+      if (!success) {
+        setError("Failed to login");
+        return;
       }
+
+      // All authenticated users are admins in this application
+      navigate("/admin/menu");
     } catch (err) {
+      console.error("Login error:", err);
       setError(err instanceof Error ? err.message : "Failed to login");
     } finally {
       setIsLoading(false);
@@ -40,7 +42,7 @@ export function LoginForm() {
           <p className="text-sm flex items-start">
             <span className="mr-2 mt-0.5"><AlertCircle className="h-4 w-4" /></span>
             <span>
-              <strong>Admin Login:</strong> Use email <code className="px-1 py-0.5 bg-primary/20 rounded">abil.samedov502@gmail.com</code> with password <code className="px-1 py-0.5 bg-primary/20 rounded">beveratesadmin</code>
+              <strong>Admin Login:</strong> Please enter your admin credentials to access the management system.
             </span>
           </p>
         </div>
