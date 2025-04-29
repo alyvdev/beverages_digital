@@ -15,21 +15,44 @@ interface CoefficientHistoryGraphProps {
   logs: CoefficientLog[];
 }
 
-export function CoefficientHistoryGraph({ logs }: CoefficientHistoryGraphProps) {
+export function CoefficientHistoryGraph({
+  logs,
+}: CoefficientHistoryGraphProps) {
   // Process data for the chart
   const chartData = useMemo(() => {
     // Sort logs by timestamp (oldest first)
     return [...logs]
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+      .sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      )
       .map((log) => {
         const date = new Date(log.timestamp);
+        const coefficient =
+          typeof log.new_coefficient === "number"
+            ? log.new_coefficient
+            : parseFloat(String(log.new_coefficient));
+        // Ensure base_price is a number, fallback to 10 if not available
+        const basePrice =
+          typeof log.menu_item.base_price === "number" &&
+          log.menu_item.base_price > 0
+            ? log.menu_item.base_price
+            : typeof log.menu_item.base_price === "string" &&
+              parseFloat(log.menu_item.base_price) > 0
+            ? parseFloat(log.menu_item.base_price)
+            : 10; // Fallback value
+        const finalPrice = basePrice * coefficient;
+
         return {
           timestamp: date,
           formattedDate: date.toLocaleDateString(),
-          formattedTime: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          coefficient: typeof log.new_coefficient === 'number'
-            ? log.new_coefficient
-            : parseFloat(String(log.new_coefficient)),
+          formattedTime: date.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          coefficient,
+          finalPrice,
+          basePrice,
           reason: log.change_reason,
         };
       });
@@ -59,6 +82,8 @@ export function CoefficientHistoryGraph({ logs }: CoefficientHistoryGraphProps) 
         formattedDate: string;
         formattedTime: string;
         coefficient: number;
+        finalPrice: number;
+        basePrice: number;
         reason: ChangeReason;
       };
     }>;
@@ -71,13 +96,28 @@ export function CoefficientHistoryGraph({ logs }: CoefficientHistoryGraphProps) 
         <div className="bg-card p-3 border border-border rounded-md shadow-md">
           <p className="font-medium">{`${data.formattedDate} ${data.formattedTime}`}</p>
           <p className="text-sm">
-            Coefficient: <span className="font-medium">{data.coefficient.toFixed(2)}</span>
+            Coefficient:{" "}
+            <span className="font-medium">{data.coefficient.toFixed(2)}</span>
+          </p>
+          <p className="text-sm">
+            Final Price:{" "}
+            <span className="font-medium">${data.finalPrice.toFixed(2)}</span>
+          </p>
+          <p className="text-xs mt-1">
+            Base Price: ${data.basePrice.toFixed(2)}
+          </p>
+          <p className="text-xs mt-1">
+            Change: {((data.coefficient - 1) * 100).toFixed(2)}% from base
+            coefficient
           </p>
           <p className="text-xs mt-1">
             Reason:{" "}
             <span
               className="px-1.5 py-0.5 rounded-full"
-              style={{ backgroundColor: `${getReasonColor(data.reason)}20`, color: getReasonColor(data.reason) }}
+              style={{
+                backgroundColor: `${getReasonColor(data.reason)}20`,
+                color: getReasonColor(data.reason),
+              }}
             >
               {data.reason}
             </span>
@@ -98,8 +138,21 @@ export function CoefficientHistoryGraph({ logs }: CoefficientHistoryGraphProps) 
   }
 
   // Calculate min and max for Y axis with some padding
-  const minCoefficient = Math.max(0.7, Math.min(...chartData.map(d => d.coefficient)) - 0.1);
-  const maxCoefficient = Math.min(2.1, Math.max(...chartData.map(d => d.coefficient)) + 0.1);
+  const minCoefficient = Math.max(
+    0.7,
+    Math.min(...chartData.map((d) => d.coefficient)) - 0.1
+  );
+  const maxCoefficient = Math.min(
+    2.1,
+    Math.max(...chartData.map((d) => d.coefficient)) + 0.1
+  );
+
+  // Calculate min and max for final price Y axis
+  const minFinalPrice = Math.max(
+    0,
+    Math.min(...chartData.map((d) => d.finalPrice)) - 1
+  );
+  const maxFinalPrice = Math.max(...chartData.map((d) => d.finalPrice)) + 1;
 
   return (
     <div className="w-full h-64 mt-4">
@@ -115,10 +168,19 @@ export function CoefficientHistoryGraph({ logs }: CoefficientHistoryGraphProps) 
             tickMargin={10}
           />
           <YAxis
+            yAxisId="left"
             domain={[minCoefficient, maxCoefficient]}
             tick={{ fontSize: 12 }}
             tickMargin={10}
             tickFormatter={(value) => value.toFixed(2)}
+          />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            domain={[minFinalPrice, maxFinalPrice]}
+            tick={{ fontSize: 12 }}
+            tickMargin={10}
+            tickFormatter={(value) => `$${value.toFixed(2)}`}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
@@ -128,17 +190,28 @@ export function CoefficientHistoryGraph({ logs }: CoefficientHistoryGraphProps) 
             name="Coefficient"
             stroke="#2563eb"
             strokeWidth={2}
+            yAxisId="left"
             dot={{
               stroke: "#2563eb",
               strokeWidth: 2,
               r: 4,
-              fill: "#fff"
+              fill: "#fff",
             }}
-            // Use custom dot renderer if needed for different colors
-            // This is commented out as it requires additional configuration
-            // dotStyle={(entry) => ({
-            //   stroke: getReasonColor(entry.reason as ChangeReason)
-            // })}
+            activeDot={{ r: 6 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="finalPrice"
+            name="Final Price ($)"
+            stroke="#10b981"
+            strokeWidth={2}
+            yAxisId="right"
+            dot={{
+              stroke: "#10b981",
+              strokeWidth: 2,
+              r: 4,
+              fill: "#fff",
+            }}
             activeDot={{ r: 6 }}
           />
         </LineChart>

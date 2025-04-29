@@ -31,50 +31,6 @@ export function MenuItemTable() {
     fetchMenuItems();
   }, []);
 
-  const handleToggleActive = async (item: MenuItem) => {
-    const action = item.is_active ? "disable" : "enable";
-    const confirmMessage = item.is_active
-      ? "Are you sure you want to disable this item? It will no longer appear in the menu for customers."
-      : "Are you sure you want to enable this item? It will appear in the menu for customers.";
-
-    if (!confirm(confirmMessage)) {
-      return;
-    }
-
-    try {
-      // Use disable or enable based on current state
-      const updatedItem = item.is_active
-        ? await menuItemsApi.disable(item.id)
-        : await menuItemsApi.enable(item.id);
-
-      // Update the item in the list
-      setMenuItems((items) =>
-        items.map((i) => (i.id === item.id ? updatedItem : i))
-      );
-    } catch (err) {
-      console.error(`Error ${action}ing menu item:`, err);
-
-      // Provide more specific error messages based on the error
-      if (err instanceof Error) {
-        const errorMsg = err.message.toLowerCase();
-
-        if (errorMsg.includes("authentication") ||
-            errorMsg.includes("credentials") ||
-            errorMsg.includes("log in") ||
-            errorMsg.includes("401")) {
-          setError(
-            `Authentication required: You need to be logged in as an admin to ${action} menu items. ` +
-            "Please log out and log in again with admin credentials."
-          );
-        } else {
-          setError(`Failed to ${action} item: ${err.message}`);
-        }
-      } else {
-        setError(`Failed to ${action} item due to an unknown error.`);
-      }
-    }
-  };
-
   const handleDeleteItem = async (item: MenuItem) => {
     const confirmMessage = `Are you sure you want to delete "${item.name}"? This action cannot be undone.`;
 
@@ -189,29 +145,6 @@ export function MenuItemTable() {
                       onClick={() => setEditingItem(item)}
                     >
                       <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={item.is_active === false
-                        ? "text-muted-foreground hover:text-green-600"
-                        : "text-muted-foreground hover:text-amber-600"}
-                      onClick={() => handleToggleActive(item)}
-                      title={item.is_active === false ? "Enable item" : "Disable item"}
-                    >
-                      {item.is_active === false ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                          <polyline points="15 3 21 3 21 9"></polyline>
-                          <line x1="10" y1="14" x2="21" y2="3"></line>
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                          <line x1="9" y1="9" x2="15" y2="15"></line>
-                          <line x1="15" y1="9" x2="9" y2="15"></line>
-                        </svg>
-                      )}
                     </Button>
                     <Button
                       variant="ghost"

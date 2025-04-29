@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, User, LogOut, Menu, X, Package, Settings } from "lucide-react";
+import { ShoppingCart, User, LogOut, Package, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
@@ -36,8 +36,6 @@ export function Header() {
     };
   }, [profileMenuOpen]);
 
-
-
   // Handle logout
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent default behavior
@@ -50,39 +48,13 @@ export function Header() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <Link
+              to="/"
+              className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+            >
               Beverages Digital
             </Link>
           </div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link
-              to="/"
-              className="text-foreground hover:text-primary transition-colors font-medium relative group"
-            >
-              Menu
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
-            </Link>
-            {isAdmin && (
-              <>
-                <Link
-                  to="/admin/menu"
-                  className="text-foreground hover:text-primary transition-colors font-medium relative group"
-                >
-                  Manage Menu
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  to="/admin/orders"
-                  className="text-foreground hover:text-primary transition-colors font-medium relative group"
-                >
-                  Orders
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
-                </Link>
-              </>
-            )}
-          </nav>
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -98,7 +70,7 @@ export function Header() {
               </Button>
             </Link>
 
-            {isAuthenticated ? (
+            {isAuthenticated && (
               <div className="relative" ref={profileMenuRef}>
                 <Button
                   variant="ghost"
@@ -113,36 +85,21 @@ export function Header() {
 
                 {/* Profile Dropdown Menu - Inside the profileMenuRef container */}
                 {profileMenuOpen && (
-                  <div
-                    className="absolute right-0 top-12 w-56 rounded-md shadow-lg bg-card border border-border z-50 animate-fade-in origin-top-right"
-                  >
-                    <div className="py-1 rounded-md bg-card" role="menu" aria-orientation="vertical">
-                      <div className="px-4 py-3 border-b border-border">
-                        <p className="text-sm font-medium">My Account</p>
-                      </div>
-
-                      <Link
-                        to="/profile"
-                        className="flex w-full items-center px-4 py-2 text-sm hover:bg-muted transition-colors text-left"
-                      >
-                        <User className="mr-2 h-4 w-4 text-muted-foreground" />
-                        Profile
-                      </Link>
-
-                      <Link
-                        to="/orders"
-                        className="flex w-full items-center px-4 py-2 text-sm hover:bg-muted transition-colors text-left"
-                      >
-                        <Package className="mr-2 h-4 w-4 text-muted-foreground" />
-                        My Orders
-                      </Link>
-
+                  <div className="absolute right-0 top-12 w-56 rounded-md shadow-lg bg-card border border-border z-50 animate-fade-in origin-top-right">
+                    <div
+                      className="py-1 rounded-md bg-card"
+                      role="menu"
+                      aria-orientation="vertical"
+                    >
                       {isAdmin && (
                         <>
-                          <div className="border-t border-border my-1"></div>
-                          <div className="px-4 py-1">
-                            <p className="text-xs font-medium text-muted-foreground">Admin</p>
-                          </div>
+                          <Link
+                            to="/profile"
+                            className="flex w-full items-center px-4 py-2 text-sm hover:bg-muted transition-colors text-left"
+                          >
+                            <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                            Profile
+                          </Link>
 
                           <Link
                             to="/admin/menu"
@@ -175,21 +132,7 @@ export function Header() {
                   </div>
                 )}
               </div>
-            ) : (
-              <Link to="/login">
-                <Button variant="outline" className="rounded-full">Login</Button>
-              </Link>
             )}
-
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden rounded-full"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
           </div>
         </div>
 
@@ -228,7 +171,9 @@ export function Header() {
               {isAdmin && (
                 <>
                   <div className="border-t border-border my-2 px-2"></div>
-                  <p className="text-xs font-medium text-muted-foreground px-2 mb-1">Admin</p>
+                  <p className="text-xs font-medium text-muted-foreground px-2 mb-1">
+                    Admin
+                  </p>
 
                   <Link
                     to="/admin/menu"

@@ -6,7 +6,6 @@ export function AdminOrdersPage() {
   return (
     <ProtectedRoute requireAdmin>
       <Layout>
-        <h1 className="text-2xl font-bold mb-6">Order Management</h1>
         <OrdersTable />
       </Layout>
     </ProtectedRoute>

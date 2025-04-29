@@ -153,6 +153,9 @@ export const ordersApi = {
   getById: (id: string) => apiRequest<Order>(`/order?order_id=${id}`),
 
   getAll: () => apiRequest<Order[]>("/orders"),
+
+  updateStatus: (id: string, status: string) =>
+    apiRequest<Order>(`/order/status?order_id=${id}`, "PATCH", { status }),
 };
 
 // Coefficient Log API
@@ -163,4 +166,3 @@ export const coefficientLogApi = {
   getHistoryByItemId: (itemId: string) =>
     apiRequest<CoefficientLog[]>(`/coefficient/history?item_id=${itemId}`),
 };
-

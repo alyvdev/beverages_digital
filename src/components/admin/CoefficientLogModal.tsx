@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, LineChart } from "lucide-react";
+import { X, LineChart, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CoefficientLog, ChangeReason } from "@/types";
 import { coefficientLogApi } from "@/lib/api";
@@ -10,11 +10,14 @@ interface CoefficientLogModalProps {
   onClose: () => void;
 }
 
-export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProps) {
+export function CoefficientLogModal({
+  itemId,
+  onClose,
+}: CoefficientLogModalProps) {
   const [logs, setLogs] = useState<CoefficientLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'list' | 'graph'>('graph');
+  const [activeTab, setActiveTab] = useState<"list" | "graph">("graph");
   const [isAuthError, setIsAuthError] = useState(false);
 
   useEffect(() => {
@@ -27,11 +30,13 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
         console.error("Error fetching coefficient logs:", err);
 
         // Check if it's an authentication error
-        if (err instanceof Error &&
-            (err.message.includes("401") ||
-             err.message.includes("auth") ||
-             err.message.includes("token") ||
-             err.message.includes("Server error"))) {
+        if (
+          err instanceof Error &&
+          (err.message.includes("401") ||
+            err.message.includes("auth") ||
+            err.message.includes("token") ||
+            err.message.includes("Server error"))
+        ) {
           setIsAuthError(true);
 
           // Generate mock data for demonstration
@@ -44,7 +49,7 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
               const date = new Date(now);
               date.setDate(date.getDate() - i);
 
-              const prevCoef = 1 + (i * 0.05);
+              const prevCoef = 1 + i * 0.05;
               const newCoef = prevCoef + (i % 2 === 0 ? 0.05 : -0.03);
 
               mockLogs.push({
@@ -53,9 +58,10 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
                 timestamp: date.toISOString(),
                 previous_coefficient: prevCoef,
                 new_coefficient: newCoef,
-                change_reason: i % 3 === 0
-                  ? ChangeReason.ORDERED
-                  : i % 3 === 1
+                change_reason:
+                  i % 3 === 0
+                    ? ChangeReason.ORDERED
+                    : i % 3 === 1
                     ? ChangeReason.DECAYED
                     : ChangeReason.MANUAL_UPDATE,
                 menu_item: {
@@ -64,8 +70,8 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
                   category: "Mock Category",
                   base_price: 10,
                   coefficient: newCoef,
-                  final_price: 10 * newCoef
-                }
+                  final_price: 10 * newCoef,
+                },
               });
             }
 
@@ -74,7 +80,9 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
 
           // Use mock data for demonstration
           setLogs(generateMockData());
-          setError("Authentication required. Showing sample data for demonstration.");
+          setError(
+            "Authentication required. Showing sample data for demonstration."
+          );
         } else {
           setError("Failed to load coefficient logs");
         }
@@ -137,25 +145,25 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
         <div className="flex border-b border-border">
           <button
             className={`flex items-center gap-2 px-4 py-3 font-medium text-sm ${
-              activeTab === 'graph'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+              activeTab === "graph"
+                ? "border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:text-foreground"
             }`}
-            onClick={() => setActiveTab('graph')}
+            onClick={() => setActiveTab("graph")}
           >
             <LineChart className="h-4 w-4" />
             Graph View
           </button>
           <button
             className={`flex items-center gap-2 px-4 py-3 font-medium text-sm ${
-              activeTab === 'list'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+              activeTab === "list"
+                ? "border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:text-foreground"
             }`}
-            onClick={() => setActiveTab('list')}
+            onClick={() => setActiveTab("list")}
           >
             <span className="h-4 w-4 flex items-center justify-center">
-              <span className="block h-3 w-3 border-t border-l border-r border-border rounded-t-sm"></span>
+              <ScrollText />
             </span>
             List View
           </button>
@@ -167,14 +175,19 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
               <p>Loading coefficient logs...</p>
             </div>
           ) : error ? (
-            <div className={`p-4 rounded-md ${isAuthError
-              ? "bg-amber-100/50 border border-amber-300 text-amber-800"
-              : "bg-destructive/10 border border-destructive text-destructive"}`}>
+            <div
+              className={`p-4 rounded-md ${
+                isAuthError
+                  ? "bg-amber-100/50 border border-amber-300 text-amber-800"
+                  : "bg-destructive/10 border border-destructive text-destructive"
+              }`}
+            >
               <p>{error}</p>
               {isAuthError && (
                 <p className="text-sm mt-2">
                   Note: The data shown is simulated for demonstration purposes.
-                  Please log in with admin credentials to view actual coefficient history.
+                  Please log in with admin credentials to view actual
+                  coefficient history.
                 </p>
               )}
             </div>
@@ -185,14 +198,19 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
           ) : (
             <>
               {/* Graph View */}
-              {activeTab === 'graph' && (
+              {activeTab === "graph" && (
                 <div className="mb-4">
                   <CoefficientHistoryGraph logs={logs} />
                   <div className="mt-4 p-3 bg-muted/20 rounded-md text-sm text-muted-foreground">
-                    <p>This graph shows how the coefficient has changed over time. Each point represents a change, with colors indicating the reason for the change.</p>
+                    <p>
+                      This graph shows how the coefficient has changed over
+                      time. Each point represents a change, with colors
+                      indicating the reason for the change.
+                    </p>
                     {isAuthError && (
                       <p className="mt-2 text-amber-600 font-medium">
-                        Note: Currently displaying simulated data for demonstration purposes.
+                        Note: Currently displaying simulated data for
+                        demonstration purposes.
                       </p>
                     )}
                   </div>
@@ -200,7 +218,7 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
               )}
 
               {/* List View */}
-              {activeTab === 'list' && (
+              {activeTab === "list" && (
                 <div className="space-y-4">
                   {logs.map((log) => (
                     <div
@@ -221,22 +239,84 @@ export function CoefficientLogModal({ itemId, onClose }: CoefficientLogModalProp
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm">
-                            {typeof log.previous_coefficient === 'number' ? log.previous_coefficient.toFixed(2) : log.previous_coefficient} →{" "}
-                            <span className="font-medium">
-                              {typeof log.new_coefficient === 'number' ? log.new_coefficient.toFixed(2) : log.new_coefficient}
-                            </span>
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {typeof log.previous_coefficient === 'number' && typeof log.new_coefficient === 'number' ?
-                              (
-                                ((log.new_coefficient - log.previous_coefficient) /
-                                  log.previous_coefficient) *
-                                100
-                              ).toFixed(2) : '0.00'
-                            }
-                            % change
-                          </p>
+                          <div className="mb-2">
+                            <p className="text-sm font-medium">Coefficient</p>
+                            {/* Calculate coefficient values and change */}
+                            {(() => {
+                              // Ensure coefficients are numbers
+                              const prevCoef =
+                                typeof log.previous_coefficient === "number"
+                                  ? log.previous_coefficient
+                                  : parseFloat(
+                                      String(log.previous_coefficient)
+                                    );
+
+                              const newCoef =
+                                typeof log.new_coefficient === "number"
+                                  ? log.new_coefficient
+                                  : parseFloat(String(log.new_coefficient));
+
+                              // Calculate percentage change
+                              const percentChange =
+                                prevCoef > 0
+                                  ? ((newCoef - prevCoef) / prevCoef) * 100
+                                  : 0;
+
+                              return (
+                                <>
+                                  <p className="text-sm">
+                                    {prevCoef.toFixed(2)} →{" "}
+                                    <span className="font-medium">
+                                      {newCoef.toFixed(2)}
+                                    </span>
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {percentChange.toFixed(2)}% change
+                                  </p>
+                                </>
+                              );
+                            })()}
+                          </div>
+
+                          <div>
+                            <p className="text-sm font-medium">Final Price</p>
+                            {/* Calculate previous and new final prices */}
+                            {(() => {
+                              // Ensure base_price is a number
+                              const basePrice =
+                                typeof log.menu_item.base_price === "number"
+                                  ? log.menu_item.base_price
+                                  : 10; // Fallback to 10 if not available
+
+                              // Calculate previous and new final prices
+                              const prevFinalPrice =
+                                basePrice * log.previous_coefficient;
+                              const newFinalPrice =
+                                basePrice * log.new_coefficient;
+
+                              // Calculate percentage change
+                              const percentChange =
+                                prevFinalPrice > 0
+                                  ? ((newFinalPrice - prevFinalPrice) /
+                                      prevFinalPrice) *
+                                    100
+                                  : 0;
+
+                              return (
+                                <>
+                                  <p className="text-sm">
+                                    ${prevFinalPrice.toFixed(2)} →{" "}
+                                    <span className="font-medium">
+                                      ${newFinalPrice.toFixed(2)}
+                                    </span>
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {percentChange.toFixed(2)}% change
+                                  </p>
+                                </>
+                              );
+                            })()}
+                          </div>
                         </div>
                       </div>
                     </div>
