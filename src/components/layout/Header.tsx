@@ -1,13 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, User, LogOut, Package, Settings } from "lucide-react";
+import {
+  ShoppingCart,
+  User,
+  LogOut,
+  Package,
+  Settings,
+  Bug,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function Header() {
-  const { isAuthenticated, isAdmin, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout, debugCookies } = useAuth();
   const { totalItems } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -52,12 +59,27 @@ export function Header() {
               to="/"
               className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
             >
-              Beverages Digital
+              Beverates Digital
             </Link>
           </div>
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
+
+            {/* Debug button - only visible in development */}
+            {process.env.NODE_ENV === "development" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full text-yellow-500"
+                onClick={() => {
+                  debugCookies();
+                  console.log("Debug button clicked");
+                }}
+              >
+                <Bug className="h-5 w-5" />
+              </Button>
+            )}
 
             <Link to="/cart" className="relative">
               <Button variant="ghost" size="icon" className="rounded-full">

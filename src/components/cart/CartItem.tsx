@@ -28,9 +28,10 @@ export function CartItem({ menuItem, quantity }: CartItemProps) {
   };
 
   // Ensure final_price is treated as a number
-  const finalPrice = typeof menuItem.final_price === 'number'
-    ? menuItem.final_price
-    : parseFloat(String(menuItem.final_price));
+  const finalPrice =
+    typeof menuItem.final_price === "number"
+      ? menuItem.final_price
+      : parseFloat(String(menuItem.final_price));
 
   const itemTotal = finalPrice * quantity;
 
@@ -38,10 +39,16 @@ export function CartItem({ menuItem, quantity }: CartItemProps) {
     <div className="flex items-center justify-between py-4 border-b border-border">
       <div className="flex-1">
         <h3 className="font-medium">{menuItem.name}</h3>
-        <p className="text-sm text-muted-foreground">{menuItem.category}</p>
-        <p className="text-sm">${typeof menuItem.final_price === 'number'
-          ? menuItem.final_price.toFixed(2)
-          : parseFloat(String(menuItem.final_price)).toFixed(2)} each</p>
+        <p className="text-sm text-muted-foreground">
+          {menuItem.category.name}
+        </p>
+        <p className="text-sm">
+          $
+          {typeof menuItem.final_price === "number"
+            ? menuItem.final_price.toFixed(2)
+            : parseFloat(String(menuItem.final_price)).toFixed(2)}{" "}
+          each
+        </p>
       </div>
 
       <div className="flex items-center gap-2">
@@ -67,9 +74,7 @@ export function CartItem({ menuItem, quantity }: CartItemProps) {
           </Button>
         </div>
 
-        <div className="w-20 text-right">
-          ${itemTotal.toFixed(2)}
-        </div>
+        <div className="w-20 text-right">${itemTotal.toFixed(2)}</div>
 
         <Button
           variant="ghost"

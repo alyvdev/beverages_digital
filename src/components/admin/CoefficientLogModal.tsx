@@ -38,51 +38,7 @@ export function CoefficientLogModal({
             err.message.includes("Server error"))
         ) {
           setIsAuthError(true);
-
-          // Generate mock data for demonstration
-          const generateMockData = (): CoefficientLog[] => {
-            const now = new Date();
-            const mockLogs: CoefficientLog[] = [];
-
-            // Create a series of mock logs with different timestamps and reasons
-            for (let i = 0; i < 5; i++) {
-              const date = new Date(now);
-              date.setDate(date.getDate() - i);
-
-              const prevCoef = 1 + i * 0.05;
-              const newCoef = prevCoef + (i % 2 === 0 ? 0.05 : -0.03);
-
-              mockLogs.push({
-                id: `mock-${i}`,
-                item_id: itemId,
-                timestamp: date.toISOString(),
-                previous_coefficient: prevCoef,
-                new_coefficient: newCoef,
-                change_reason:
-                  i % 3 === 0
-                    ? ChangeReason.ORDERED
-                    : i % 3 === 1
-                    ? ChangeReason.DECAYED
-                    : ChangeReason.MANUAL_UPDATE,
-                menu_item: {
-                  id: itemId,
-                  name: "Mock Item",
-                  category: "Mock Category",
-                  base_price: 10,
-                  coefficient: newCoef,
-                  final_price: 10 * newCoef,
-                },
-              });
-            }
-
-            return mockLogs;
-          };
-
-          // Use mock data for demonstration
-          setLogs(generateMockData());
-          setError(
-            "Authentication required. Showing sample data for demonstration."
-          );
+          setError("Authentication required to view coefficient history");
         } else {
           setError("Failed to load coefficient logs");
         }
@@ -130,11 +86,6 @@ export function CoefficientLogModal({
         <div className="flex justify-between items-center p-4 border-b border-border">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold">Coefficient History</h2>
-            {isAuthError && (
-              <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
-                Demo Mode
-              </span>
-            )}
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
@@ -183,13 +134,6 @@ export function CoefficientLogModal({
               }`}
             >
               <p>{error}</p>
-              {isAuthError && (
-                <p className="text-sm mt-2">
-                  Note: The data shown is simulated for demonstration purposes.
-                  Please log in with admin credentials to view actual
-                  coefficient history.
-                </p>
-              )}
             </div>
           ) : logs.length === 0 ? (
             <div className="text-center py-8">
@@ -207,12 +151,6 @@ export function CoefficientLogModal({
                       time. Each point represents a change, with colors
                       indicating the reason for the change.
                     </p>
-                    {isAuthError && (
-                      <p className="mt-2 text-amber-600 font-medium">
-                        Note: Currently displaying simulated data for
-                        demonstration purposes.
-                      </p>
-                    )}
                   </div>
                 </div>
               )}

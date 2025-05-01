@@ -10,10 +10,45 @@ import {
   CoefficientLog,
 } from "@/types";
 
-// Use the correct API URL
 const API_URL = "http://localhost:8000";
 
-// Helper function for API requests
+async function loginRequest(data: LoginRequest): Promise<LoginResponse> {
+  const url = `${API_URL}/auth/login`;
+  const options: RequestInit = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  };
+
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Login failed: ${response.statusText}`);
+  }
+
+  return response.json() as Promise<LoginResponse>;
+}
+
+async function refreshTokenRequest(): Promise<LoginResponse> {
+  const url = `${API_URL}/auth/refresh`;
+  const options: RequestInit = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  };
+
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.detail || `Token refresh failed: ${response.statusText}`
+    );
+  }
+
+  return response.json() as Promise<LoginResponse>;
+}
+
 async function apiRequest<T>(
   endpoint: string,
   method: string = "GET",
@@ -26,7 +61,7 @@ async function apiRequest<T>(
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include", // Include cookies in the request
+    credentials: "include",
   };
 
   if (data) {
@@ -36,44 +71,44 @@ async function apiRequest<T>(
   try {
     const response = await fetch(url, options);
 
-    // Log response headers for debugging
     const headers: Record<string, string> = {};
     response.headers.forEach((value, key) => {
       headers[key] = value;
     });
 
     if (!response.ok) {
-      // Try to parse error response
       const errorData = await response.json().catch(() => ({}));
 
-      // Handle specific error codes
       if (response.status === 401) {
-        // Check if user is logged in
         const userEmail = localStorage.getItem("userEmail");
         if (userEmail) {
-          // If this is not a refresh token request, try to refresh the token
           if (endpoint !== "/auth/refresh") {
             try {
-              // Try to refresh the token
-              await apiRequest("/auth/refresh", "POST");
+              await refreshTokenRequest();
 
-              // If refresh succeeds, retry the original request
               return await apiRequest(endpoint, method, data);
             } catch {
-              // If refresh fails, clear user data and throw error
               localStorage.removeItem("userEmail");
+              localStorage.removeItem("authTimestamp");
+
               document.cookie =
                 "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
               document.cookie =
                 "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
-              // Force page reload to update auth state
+              document.cookie =
+                "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;";
+              document.cookie =
+                "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;";
+
+              document.cookie = "access_token=; max-age=0; path=/;";
+              document.cookie = "refresh_token=; max-age=0; path=/;";
+
               window.location.href = "/login";
 
               throw new Error("Session expired: Please log in again");
             }
           } else {
-            // This is already a refresh token request that failed
             throw new Error(
               errorData.detail ||
                 "Authentication failed: Please log out and log in again"
@@ -94,6 +129,22 @@ async function apiRequest<T>(
         throw new Error(
           errorData.detail || "Not found: The requested resource does not exist"
         );
+      } else if (response.status === 422) {
+        if (errorData.detail && Array.isArray(errorData.detail)) {
+          const errors = errorData.detail
+            .map((err: { loc?: string[]; msg: string }) => {
+              if (err.loc && err.loc.length > 1) {
+                return `${err.loc[1]}: ${err.msg}`;
+              }
+              return err.msg;
+            })
+            .join(", ");
+          throw new Error(`Validation error: ${errors}`);
+        } else {
+          throw new Error(
+            errorData.detail || "Validation error: Please check your input"
+          );
+        }
       } else if (response.status === 500) {
         throw new Error(
           errorData.detail || "Server error: Something went wrong on the server"
@@ -105,7 +156,6 @@ async function apiRequest<T>(
       );
     }
 
-    // For 204 No Content responses
     if (response.status === 204) {
       return {} as T;
     }
@@ -113,19 +163,24 @@ async function apiRequest<T>(
     return response.json();
   } catch (error) {
     console.error(`API request failed for ${endpoint}:`, error);
-    throw error;
+
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    if (typeof error === "object" && error !== null) {
+      throw new Error(JSON.stringify(error));
+    }
+
+    throw new Error(`API request failed: ${String(error)}`);
   }
 }
 
-// Auth API
 export const authApi = {
-  login: (data: LoginRequest) =>
-    apiRequest<LoginResponse>("/auth/login", "POST", data),
-
-  refresh: () => apiRequest<LoginResponse>("/auth/refresh", "POST"),
+  login: (data: LoginRequest) => loginRequest(data),
+  refresh: () => refreshTokenRequest(),
 };
 
-// Menu Items API
 export const menuItemsApi = {
   getAll: () => apiRequest<MenuItem[]>("/menu"),
 
@@ -145,24 +200,38 @@ export const menuItemsApi = {
     apiRequest<MenuItem>(`/menu?item_id=${id}`, "PATCH", { is_active: true }),
 };
 
-// Orders API
 export const ordersApi = {
   create: (data: OrderCreate) =>
     apiRequest<OrderSimple>("/order", "POST", data),
 
   getById: (id: string) => apiRequest<Order>(`/order?order_id=${id}`),
 
-  getAll: () => apiRequest<Order[]>("/orders"),
+  getAll: (page: number = 1, pageSize: number = 10) =>
+    apiRequest<{
+      items: Order[];
+      total: number;
+      page: number;
+      page_size: number;
+      pages: number;
+    }>(`/orders?page=${page}&page_size=${pageSize}`),
 
   updateStatus: (id: string, status: string) =>
     apiRequest<Order>(`/order/status?order_id=${id}`, "PATCH", { status }),
 };
 
-// Coefficient Log API
 export const coefficientLogApi = {
   getByItemId: (itemId: string) =>
     apiRequest<CoefficientLog>(`/coefficient?item_id=${itemId}`),
 
   getHistoryByItemId: (itemId: string) =>
     apiRequest<CoefficientLog[]>(`/coefficient/history?item_id=${itemId}`),
+};
+
+export const categoriesApi = {
+  getAll: () => apiRequest<{ id: string; name: string }[]>("/categories"),
+
+  getById: (id: string) =>
+    apiRequest<{ id: string; name: string }>(`/category?category_id=${id}`),
+
+  create: (name: string) => apiRequest<void>("/category", "POST", { name }),
 };

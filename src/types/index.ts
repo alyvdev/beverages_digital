@@ -25,7 +25,10 @@ export interface User {
 export interface MenuItem {
   id: string;
   name: string;
-  category: string;
+  category: {
+    id: string;
+    name: string;
+  };
   base_price: number;
   coefficient: number;
   final_price: number;
@@ -34,13 +37,13 @@ export interface MenuItem {
 
 export interface MenuItemCreate {
   name: string;
-  category: string;
+  category_id: string;
   base_price: number;
 }
 
 export interface MenuItemUpdate {
   name?: string;
-  category?: string;
+  category_id?: string;
   base_price?: number;
   coefficient?: number;
   is_active?: boolean;

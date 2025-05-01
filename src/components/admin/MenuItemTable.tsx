@@ -12,7 +12,9 @@ export function MenuItemTable() {
   const [error, setError] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showCoefficientLog, setShowCoefficientLog] = useState<string | null>(null);
+  const [showCoefficientLog, setShowCoefficientLog] = useState<string | null>(
+    null
+  );
 
   const fetchMenuItems = async () => {
     setIsLoading(true);
@@ -50,13 +52,15 @@ export function MenuItemTable() {
       if (err instanceof Error) {
         const errorMsg = err.message.toLowerCase();
 
-        if (errorMsg.includes("authentication") ||
-            errorMsg.includes("credentials") ||
-            errorMsg.includes("log in") ||
-            errorMsg.includes("401")) {
+        if (
+          errorMsg.includes("authentication") ||
+          errorMsg.includes("credentials") ||
+          errorMsg.includes("log in") ||
+          errorMsg.includes("401")
+        ) {
           setError(
             "Authentication required: You need to be logged in as an admin to delete menu items. " +
-            "Please log out and log in again with admin credentials."
+              "Please log out and log in again with admin credentials."
           );
         } else {
           setError(`Failed to delete item: ${err.message}`);
@@ -99,23 +103,35 @@ export function MenuItemTable() {
     }
 
     return (
-      <div className="overflow-x-auto">
+      <div className="min-h-screen overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-muted">
               <th className="text-left p-3 border-b border-border">Name</th>
               <th className="text-left p-3 border-b border-border">Category</th>
-              <th className="text-right p-3 border-b border-border">Base Price</th>
-              <th className="text-right p-3 border-b border-border">Coefficient</th>
-              <th className="text-right p-3 border-b border-border">Final Price</th>
-              <th className="text-center p-3 border-b border-border">Actions</th>
+              <th className="text-right p-3 border-b border-border">
+                Base Price
+              </th>
+              <th className="text-right p-3 border-b border-border">
+                Coefficient
+              </th>
+              <th className="text-right p-3 border-b border-border">
+                Final Price
+              </th>
+              <th className="text-center p-3 border-b border-border">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {menuItems.map((item) => (
               <tr
                 key={item.id}
-                className={`hover:bg-muted/50 ${item.is_active === false ? 'bg-muted/30 text-muted-foreground' : ''}`}
+                className={`hover:bg-muted/50 ${
+                  item.is_active === false
+                    ? "bg-muted/30 text-muted-foreground"
+                    : ""
+                }`}
               >
                 <td className="p-3 border-b border-border">
                   <div className="flex items-center gap-2">
@@ -127,15 +143,25 @@ export function MenuItemTable() {
                     )}
                   </div>
                 </td>
-                <td className="p-3 border-b border-border">{item.category}</td>
-                <td className="p-3 border-b border-border text-right">
-                  ${typeof item.base_price === 'number' ? item.base_price.toFixed(2) : item.base_price}
+                <td className="p-3 border-b border-border">
+                  {item.category.name}
                 </td>
                 <td className="p-3 border-b border-border text-right">
-                  {typeof item.coefficient === 'number' ? item.coefficient.toFixed(2) : item.coefficient}
+                  $
+                  {typeof item.base_price === "number"
+                    ? item.base_price.toFixed(2)
+                    : item.base_price}
                 </td>
                 <td className="p-3 border-b border-border text-right">
-                  ${typeof item.final_price === 'number' ? item.final_price.toFixed(2) : item.final_price}
+                  {typeof item.coefficient === "number"
+                    ? item.coefficient.toFixed(2)
+                    : item.coefficient}
+                </td>
+                <td className="p-3 border-b border-border text-right">
+                  $
+                  {typeof item.final_price === "number"
+                    ? item.final_price.toFixed(2)
+                    : item.final_price}
                 </td>
                 <td className="p-3 border-b border-border">
                   <div className="flex justify-center gap-2">
@@ -184,11 +210,7 @@ export function MenuItemTable() {
           <p className="font-medium mb-2">Error</p>
           <p>{error}</p>
           <div className="mt-4 flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setError(null)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setError(null)}>
               Dismiss
             </Button>
           </div>

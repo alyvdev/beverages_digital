@@ -22,7 +22,7 @@ export function MenuList() {
 
         // Extract unique categories
         const uniqueCategories = Array.from(
-          new Set(items.map((item) => item.category))
+          new Set(items.map((item) => item.category.name))
         );
         setCategories(uniqueCategories);
         setIsAuthError(false);
@@ -30,9 +30,10 @@ export function MenuList() {
         console.error("Error fetching menu items:", err);
 
         // Check if it's an authentication error (401)
-        if (err instanceof Error &&
-            (err.message.includes("401") ||
-             err.message.includes("credentials"))) {
+        if (
+          err instanceof Error &&
+          (err.message.includes("401") || err.message.includes("credentials"))
+        ) {
           setIsAuthError(true);
           setError("Authentication required to view menu items");
         } else {
@@ -47,7 +48,7 @@ export function MenuList() {
   }, []);
 
   const filteredItems = selectedCategory
-    ? menuItems.filter((item) => item.category === selectedCategory)
+    ? menuItems.filter((item) => item.category.name === selectedCategory)
     : menuItems;
 
   if (isLoading) {

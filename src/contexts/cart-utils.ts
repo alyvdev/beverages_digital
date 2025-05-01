@@ -16,4 +16,4 @@ export interface CartContextType {
   getOrderItems: () => OrderItemCreate[];
 }
 
-export const CART_STORAGE_KEY = "beverages_cart";
+export const CART_STORAGE_KEY = "beverates_cart";

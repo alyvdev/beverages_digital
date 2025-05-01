@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { CoefficientLog, ChangeReason } from "@/types";
+import { CoefficientLog } from "@/types";
 import { coefficientLogApi } from "@/lib/api";
 import { LineChart as LineChartIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,45 +23,6 @@ export function PriceHistoryGraph({ itemId, onClose }: PriceHistoryGraphProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Generate mock data for demonstration
-  const generateMockData = useCallback(() => {
-    const mockData: CoefficientLog[] = [];
-    const now = new Date();
-    const basePrice = 5.0;
-
-    for (let i = 30; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-
-      const coefficient = 0.8 + Math.random() * 0.4; // Random between 0.8 and 1.2
-
-      mockData.push({
-        id: `mock-${i}`,
-        item_id: itemId,
-        timestamp: date.toISOString(),
-        previous_coefficient:
-          i === 30 ? 1.0 : mockData[mockData.length - 1].new_coefficient,
-        new_coefficient: coefficient,
-        change_reason:
-          i % 3 === 0
-            ? ChangeReason.ORDERED
-            : i % 3 === 1
-            ? ChangeReason.DECAYED
-            : ChangeReason.MANUAL_UPDATE,
-        menu_item: {
-          id: itemId,
-          name: "Mock Item",
-          category: "Mock Category",
-          base_price: basePrice,
-          coefficient: coefficient,
-          final_price: basePrice * coefficient,
-        },
-      });
-    }
-
-    setLogs(mockData);
-  }, [itemId]);
-
   useEffect(() => {
     const fetchLogs = async () => {
       setIsLoading(true);
@@ -71,21 +32,13 @@ export function PriceHistoryGraph({ itemId, onClose }: PriceHistoryGraphProps) {
       } catch (err) {
         console.error("Error fetching price history:", err);
         setError("Failed to load price history");
-
-        // For demonstration, generate mock data if API fails
-        if (
-          err instanceof Error &&
-          (err.message.includes("401") || err.message.includes("credentials"))
-        ) {
-          generateMockData();
-        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchLogs();
-  }, [itemId, generateMockData]);
+  }, [itemId]);
 
   // Process data for the chart
   const chartData = logs.map((log) => {

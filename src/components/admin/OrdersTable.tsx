@@ -13,15 +13,16 @@ export function OrdersTable() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
-  // Filtering state
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 
-  // Add click outside handler to close dropdowns and filter panel
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalItems, setTotalItems] = useState<number>(0);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Handle status dropdown click outside
       if (
         openDropdownId &&
         !(
@@ -34,7 +35,6 @@ export function OrdersTable() {
         setOpenDropdownId(null);
       }
 
-      // Handle filter panel click outside
       if (
         isFilterOpen &&
         !(
@@ -52,11 +52,20 @@ export function OrdersTable() {
     };
   }, [openDropdownId, isFilterOpen]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page: number = currentPage) => {
     setIsLoading(true);
     try {
-      const data = await ordersApi.getAll();
-      setOrders(data);
+      const response = await ordersApi.getAll(page);
+
+      if (response && typeof response === "object" && "items" in response) {
+        setOrders(response.items || []);
+
+        setTotalPages(response.pages || 1);
+        setTotalItems(response.total || 0);
+        setCurrentPage(response.page || 1);
+      } else {
+        setOrders(Array.isArray(response) ? response : []);
+      }
     } catch (err) {
       setError("Failed to load orders");
       console.error(err);
@@ -65,52 +74,58 @@ export function OrdersTable() {
     }
   };
 
+  const hasActiveFilters = searchQuery !== "" || statusFilter !== "all";
+
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (!hasActiveFilters) {
+      fetchOrders(currentPage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, hasActiveFilters]);
+
+  useEffect(() => {
+    if (hasActiveFilters) {
+      setCurrentPage(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, statusFilter]);
 
   const handleStatusChange = async (
     orderId: string,
     newStatus: OrderStatus
   ) => {
-    if (updatingOrderId) return; // Prevent multiple simultaneous updates
+    if (updatingOrderId) return;
 
     setUpdatingOrderId(orderId);
     try {
       await ordersApi.updateStatus(orderId, newStatus);
 
-      // Update the local state to reflect the change
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.id === orderId ? { ...order, status: newStatus } : order
         )
       );
-
-      // Show success message (optional)
-      console.log(`Order ${orderId} status updated to ${newStatus}`);
     } catch (err) {
       console.error("Failed to update order status:", err);
-      // Show error message (optional)
+
       alert("Failed to update order status. Please try again.");
     } finally {
       setUpdatingOrderId(null);
     }
   };
 
-  // Filter orders based on search query and status filter
-  const filteredOrders = orders.filter((order) => {
-    // Filter by search query (check if order ID contains the search query)
-    const matchesSearch =
-      searchQuery === "" ||
-      order.id.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredOrders = hasActiveFilters
+    ? orders.filter((order) => {
+        const matchesSearch =
+          searchQuery === "" ||
+          order.id.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Filter by status
-    const matchesStatus =
-      statusFilter === "all" || order.status === statusFilter;
+        const matchesStatus =
+          statusFilter === "all" || order.status === statusFilter;
 
-    // Return true if both conditions are met
-    return matchesSearch && matchesStatus;
-  });
+        return matchesSearch && matchesStatus;
+      })
+    : orders;
 
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -150,7 +165,13 @@ export function OrdersTable() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Orders</h2>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={fetchOrders}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setCurrentPage(1);
+              fetchOrders(1);
+            }}
+          >
             Refresh
           </Button>
           <Button
@@ -233,6 +254,7 @@ export function OrdersTable() {
             onClick={() => {
               setSearchQuery("");
               setStatusFilter("all");
+              setCurrentPage(1);
             }}
             className="mt-2 text-primary hover:underline"
           >
@@ -240,7 +262,7 @@ export function OrdersTable() {
           </button>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="min-h-screen overflow-x-auto">
           <div className="mb-2 text-sm text-muted-foreground">
             Showing {filteredOrders.length} of {orders.length} orders
             {(searchQuery || statusFilter !== "all") && (
@@ -248,6 +270,7 @@ export function OrdersTable() {
                 onClick={() => {
                   setSearchQuery("");
                   setStatusFilter("all");
+                  setCurrentPage(1);
                 }}
                 className="ml-2 text-primary hover:underline"
               >
@@ -359,6 +382,52 @@ export function OrdersTable() {
               ))}
             </tbody>
           </table>
+
+          {/* Pagination controls - only show when not filtering */}
+          {totalPages > 1 && !hasActiveFilters && (
+            <div className="flex flex-col sm:flex-row justify-between items-center mt-4 px-4 gap-4">
+              {/* Order count - hidden on mobile to save space */}
+              <div className="text-sm text-muted-foreground hidden sm:block">
+                {hasActiveFilters
+                  ? `Showing ${filteredOrders.length} filtered orders`
+                  : `Showing ${orders.length} of ${totalItems} orders`}
+              </div>
+
+              {/* Pagination controls - responsive design */}
+              <div className="flex items-center justify-center w-full sm:w-auto bg-card rounded-md border border-border shadow-sm">
+                {/* Previous button */}
+                <button
+                  onClick={() => {
+                    const newPage = Math.max(currentPage - 1, 1);
+                    setCurrentPage(newPage);
+                  }}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-l-md border-r border-border bg-background hover:bg-accent disabled:opacity-50 disabled:hover:bg-background transition-colors"
+                  aria-label="Previous page"
+                >
+                  Previous
+                </button>
+
+                {/* Page indicator */}
+                <div className="px-4 py-2 text-sm font-medium bg-background text-center min-w-[100px]">
+                  Page {currentPage} of {totalPages}
+                </div>
+
+                {/* Next button */}
+                <button
+                  onClick={() => {
+                    const newPage = Math.min(currentPage + 1, totalPages);
+                    setCurrentPage(newPage);
+                  }}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-r-md border-l border-border bg-background hover:bg-accent disabled:opacity-50 disabled:hover:bg-background transition-colors"
+                  aria-label="Next page"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

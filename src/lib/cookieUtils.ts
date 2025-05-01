@@ -5,25 +5,26 @@
 /**
  * Check if a cookie exists
  * @param name The name of the cookie to check
- * @returns boolean indicating if the cookie exists
+ * @returns string value of cookie or null if it doesn't exist
  */
 export function getCookie(name: string): string | null {
-  const savedEmail = localStorage.getItem("userEmail");
-  if (savedEmail && (name === "access_token" || name === "refresh_token")) {
-    return "token-exists";
-  }
-
   const cookies = document.cookie.split(";");
+
+  // Debug cookie search
+  // console.log(`Searching for cookie: ${name}`);
+  // console.log(`All cookies: ${document.cookie}`);
 
   for (let i = 0; i < cookies.length; i++) {
     const cookie = cookies[i].trim();
 
     if (cookie.startsWith(name + "=")) {
       const value = cookie.substring(name.length + 1);
+      // console.log(`Found cookie ${name}: ${value.substring(0, 10)}...`);
       return value;
     }
   }
 
+  // console.log(`Cookie ${name} not found`);
   return null;
 }
 
@@ -32,10 +33,24 @@ export function getCookie(name: string): string | null {
  * @returns boolean indicating if both access and refresh tokens exist
  */
 export function hasAuthCookies(): boolean {
-  const accessToken = getCookie("access_token");
-  const refreshToken = getCookie("refresh_token");
+  // Direct check for cookies in document.cookie
+  const cookieStr = document.cookie;
 
-  return !!accessToken && !!refreshToken;
+  // More precise check for cookies - look for the exact cookie name followed by =
+  // This avoids false positives from partial matches
+  const hasAccess = cookieStr
+    .split(";")
+    .some((c) => c.trim().startsWith("access_token="));
+  const hasRefresh = cookieStr
+    .split(";")
+    .some((c) => c.trim().startsWith("refresh_token="));
+
+  // For debugging
+  // console.log("Cookie string:", cookieStr);
+  // console.log("Has access token:", hasAccess);
+  // console.log("Has refresh token:", hasRefresh);
+
+  return hasAccess && hasRefresh;
 }
 
 /**
@@ -43,8 +58,17 @@ export function hasAuthCookies(): boolean {
  * @returns boolean indicating if only refresh token exists
  */
 export function hasOnlyRefreshToken(): boolean {
-  const accessToken = getCookie("access_token");
-  const refreshToken = getCookie("refresh_token");
+  // Direct check for cookies in document.cookie
+  const cookieStr = document.cookie;
 
-  return !accessToken && !!refreshToken;
+  // More precise check for cookies - look for the exact cookie name followed by =
+  // This avoids false positives from partial matches
+  const hasAccess = cookieStr
+    .split(";")
+    .some((c) => c.trim().startsWith("access_token="));
+  const hasRefresh = cookieStr
+    .split(";")
+    .some((c) => c.trim().startsWith("refresh_token="));
+
+  return !hasAccess && hasRefresh;
 }

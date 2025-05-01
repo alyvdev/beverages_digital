@@ -37,7 +37,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
 
         {/* Category badge */}
         <span className="absolute top-3 right-3 bg-card text-foreground text-xs px-3 py-1 rounded-full shadow-sm border border-border">
-          {item.category}
+          {item.category.name}
         </span>
 
         {/* Status badge for inactive items */}

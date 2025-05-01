@@ -1,6 +1,6 @@
-# Beverages Digital
+# Beverates Digital
 
-A digital menu and ordering system for beverages.
+A digital menu and ordering system for beverates.
 
 ## Project Structure
 
