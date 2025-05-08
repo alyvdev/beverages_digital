@@ -6,6 +6,7 @@ export type ModalType = "priceHistory" | null;
 // Define specific props for each modal type
 export interface PriceHistoryModalProps {
   itemId: string;
+  itemName?: string;
 }
 
 // Union type for all possible modal props
@@ -19,4 +20,6 @@ export interface ModalContextType {
 }
 
 // Create the context
-export const ModalContext = createContext<ModalContextType | undefined>(undefined);
+export const ModalContext = createContext<ModalContextType | undefined>(
+  undefined
+);

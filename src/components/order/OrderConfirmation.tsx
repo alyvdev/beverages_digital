@@ -18,6 +18,9 @@ export function OrderConfirmation() {
       try {
         const data = await ordersApi.getById(orderId);
         setOrder(data);
+
+        // Müşteri sayısını artık burada artırmıyoruz
+        // Sadece CartSummary'de artırılıyor
       } catch (err) {
         console.error("Error fetching order:", err);
         setError("Failed to load order details");
@@ -71,9 +74,12 @@ export function OrderConfirmation() {
         </div>
         <div className="flex justify-between">
           <p className="text-sm text-muted-foreground">Total</p>
-          <p className="font-bold">${typeof order.total_price === 'number'
-            ? order.total_price.toFixed(2)
-            : parseFloat(String(order.total_price)).toFixed(2)}</p>
+          <p className="font-bold">
+            $
+            {typeof order.total_price === "number"
+              ? order.total_price.toFixed(2)
+              : parseFloat(String(order.total_price)).toFixed(2)}
+          </p>
         </div>
       </div>
 
@@ -92,9 +98,13 @@ export function OrderConfirmation() {
                 </p>
               </div>
               <div className="text-right">
-                <p>${(typeof item.price_at_order === 'number'
-                  ? item.price_at_order * item.quantity
-                  : parseFloat(String(item.price_at_order)) * item.quantity).toFixed(2)}</p>
+                <p>
+                  $
+                  {(typeof item.price_at_order === "number"
+                    ? item.price_at_order * item.quantity
+                    : parseFloat(String(item.price_at_order)) * item.quantity
+                  ).toFixed(2)}
+                </p>
               </div>
             </div>
           ))}

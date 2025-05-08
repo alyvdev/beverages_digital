@@ -29,38 +29,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isServerAuthenticated = useRef<boolean>(false);
 
   const logout = useCallback(async () => {
-    setUser(null);
-
-    isServerAuthenticated.current = false;
-
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("authTimestamp");
-
     try {
-      document.cookie =
-        "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie =
-        "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      // Call the backend logout endpoint to clear cookies
+      await authApi.logout();
 
-      document.cookie =
-        "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;";
-      document.cookie =
-        "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;";
+      // Update local state
+      setUser(null);
+      isServerAuthenticated.current = false;
 
-      document.cookie = "access_token=; max-age=0; path=/;";
-      document.cookie = "refresh_token=; max-age=0; path=/;";
-
-      document.cookie =
-        "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; samesite=strict;";
-      document.cookie =
-        "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; samesite=strict;";
-
-      document.cookie =
-        "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure;";
-      document.cookie =
-        "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure;";
+      // Clear local storage
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("authTimestamp");
     } catch (error) {
       console.error("Error during logout:", error);
+
+      // Even if the server request fails, clear local state
+      setUser(null);
+      isServerAuthenticated.current = false;
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("authTimestamp");
     }
   }, []);
 

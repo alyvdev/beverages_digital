@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -19,12 +19,18 @@
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
   --accent: #818cf8;
-  --accent-foreground: #1e1b4b;
+  --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
   --input: #e2e8f0;
   --ring: #6366f1;
+
+  /* Stock Change Colors - Light Mode */
+  --price-up: #dc2626; /* text-red-600 */
+  --price-down: #1ead52; /* text-green-600 */
+  --price-neutral: #4b5563; /* text-gray-600 */
+  --price-value: #0639a8; /* text-blue-600 */
 
   /* Chart Colors */
   --chart-1: #6366f1;
@@ -44,9 +50,10 @@
   --sidebar-ring: #6366f1;
 
   /* Fonts */
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: 'Georgia', 'Times New Roman', serif;
-  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  --font-serif: "Georgia", "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
 
   /* Radius and Shadows */
   --radius: 0.5rem;
@@ -54,7 +61,8 @@
   --shadow-xs: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-sm: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25), 0 0 15px 0 rgb(0 0 0 / 0.05);
   --shadow-2xl: 0 35px 60px -15px rgb(0 0 0 / 0.3);
@@ -82,6 +90,12 @@
   --input: #334155;
   --ring: #818cf8;
 
+  /* Stock Change Colors - Dark Mode */
+  --price-up: #f87171; /* text-destructive */
+  --price-down: #4ade80; /* text-green-500 */
+  --price-neutral: #94a3b8; /* text-muted-foreground */
+  --price-value: #818cf8; /* text-primary */
+
   /* Chart Colors */
   --chart-1: #818cf8;
   --chart-2: #a78bfa;
@@ -100,9 +114,10 @@
   --sidebar-ring: #818cf8;
 
   /* Fonts */
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: 'Georgia', 'Times New Roman', serif;
-  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  --font-serif: "Georgia", "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
 
   /* Radius and Shadows */
   --radius: 0.5rem;
@@ -110,7 +125,8 @@
   --shadow-xs: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
   --shadow-sm: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
   --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
-  --shadow-md: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 20px 25px -5px rgb(0 0 0 / 0.4),
+    0 8px 10px -6px rgb(0 0 0 / 0.4);
   --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
   --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.5), 0 0 15px 0 rgb(0 0 0 / 0.2);
   --shadow-2xl: 0 35px 60px -15px rgb(0 0 0 / 0.6);
@@ -201,7 +217,12 @@
   }
 
   /* Headings */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-medium tracking-tight;
   }
 
@@ -225,8 +246,12 @@
 
 /* Custom animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideInUp {
@@ -241,7 +266,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -285,3 +311,19 @@
   @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
+/* Stock Change Colors */
+.text-price-up {
+  color: var(--price-up);
+}
+
+.text-price-down {
+  color: var(--price-down);
+}
+
+.text-price-neutral {
+  color: var(--price-neutral);
+}
+
+.text-price-value {
+  color: var(--price-value);
+}

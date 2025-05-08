@@ -10,14 +10,33 @@ interface MenuItemCardProps {
 
 export function MenuItemCard({ item }: MenuItemCardProps) {
   const { addItem } = useCart();
-  const { openModal } = useModal();
+
+  // Try to use the modal system, but provide a fallback if it's not available
+  let modalSystem;
+  try {
+    modalSystem = useModal();
+  } catch (error) {
+    console.warn("Modal system not available:", error);
+    modalSystem = {
+      openModal: () =>
+        alert("Price history feature is not available at the moment."),
+    };
+  }
 
   const handleAddToCart = () => {
     addItem(item);
   };
 
   const showPriceHistory = () => {
-    openModal("priceHistory", { itemId: item.id });
+    try {
+      modalSystem.openModal("priceHistory", {
+        itemId: item.id,
+        itemName: item.name,
+      });
+    } catch (error) {
+      console.error("Failed to open price history modal:", error);
+      alert(`Price history for ${item.name} is not available at the moment.`);
+    }
   };
 
   // Determine if the item is active

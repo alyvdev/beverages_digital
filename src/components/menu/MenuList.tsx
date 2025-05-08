@@ -17,12 +17,16 @@ export function MenuList() {
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        const items = await menuItemsApi.getAll();
-        setMenuItems(items);
+        const response = await menuItemsApi.getAll();
+        // Extract the items array from the pagination response
+        const menuItemsArray = Array.isArray(response.items)
+          ? response.items
+          : [];
+        setMenuItems(menuItemsArray);
 
         // Extract unique categories
         const uniqueCategories = Array.from(
-          new Set(items.map((item) => item.category.name))
+          new Set(menuItemsArray.map((item) => item.category.name))
         );
         setCategories(uniqueCategories);
         setIsAuthError(false);

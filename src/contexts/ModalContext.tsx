@@ -1,5 +1,6 @@
 import { useState, ReactNode } from "react";
 import { PriceHistoryGraph } from "@/components/menu/PriceHistoryGraph";
+import { FullscreenPriceHistoryModal } from "@/components/menu/FullscreenPriceHistoryModal";
 import { ModalContext, ModalType, ModalProps } from "./ModalContextType";
 
 // Provider component
@@ -29,6 +30,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
           <div className="bg-background rounded-lg shadow-lg max-w-md w-full max-h-[80vh] overflow-auto p-6 m-4 animate-fade-in">
             <PriceHistoryGraph
               itemId={modalProps.itemId}
+              itemName={modalProps.itemName || "Item"}
               onClose={closeModal}
             />
           </div>

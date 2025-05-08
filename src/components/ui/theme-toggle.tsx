@@ -30,35 +30,65 @@ export function ThemeToggle() {
           <div className="py-1" role="menu" aria-orientation="vertical">
             <button
               className={`w-full text-left px-4 py-2 text-sm ${
-                theme === "light" ? "bg-accent text-accent-foreground" : "text-card-foreground hover:bg-muted"
+                theme === "light"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-card-foreground hover:bg-muted"
               }`}
               onClick={() => toggleTheme("light")}
             >
               <div className="flex items-center">
                 <Sun className="mr-2 h-4 w-4" />
-                <span>Light</span>
+                <span
+                  className={
+                    theme === "light"
+                      ? "text-accent-foreground"
+                      : "text-card-foreground"
+                  }
+                >
+                  Light
+                </span>
               </div>
             </button>
             <button
               className={`w-full text-left px-4 py-2 text-sm ${
-                theme === "dark" ? "bg-accent text-accent-foreground" : "text-card-foreground hover:bg-muted"
+                theme === "dark"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-card-foreground hover:bg-muted"
               }`}
               onClick={() => toggleTheme("dark")}
             >
               <div className="flex items-center">
                 <Moon className="mr-2 h-4 w-4" />
-                <span>Dark</span>
+                <span
+                  className={
+                    theme === "dark"
+                      ? "text-accent-foreground"
+                      : "text-card-foreground"
+                  }
+                >
+                  Dark
+                </span>
               </div>
             </button>
             <button
               className={`w-full text-left px-4 py-2 text-sm ${
-                theme === "system" ? "bg-accent text-accent-foreground" : "text-card-foreground hover:bg-muted"
+                theme === "system"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-card-foreground hover:bg-muted"
               }`}
               onClick={() => toggleTheme("system")}
             >
               <div className="flex items-center">
                 <Monitor className="mr-2 h-4 w-4" />
-                <span>System</span>
+                <span
+                  className={
+                    theme === "system"
+                      ? "text-accent-foreground"
+                      : "text-card-foreground"
+                  }
+                >
+                  System
+                </span>
               </div>
             </button>
           </div>

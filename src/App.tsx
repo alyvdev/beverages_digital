@@ -3,6 +3,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ModalProvider } from "@/contexts/ModalContext";
+import { CustomerProvider } from "@/contexts/CustomerContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 // Pages
@@ -20,34 +21,36 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <CartProvider>
-            <ModalProvider>
-              <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200">
-                <Routes>
-                  {/* Public Routes - Accessible to all users */}
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route
-                    path="/order-confirmation/:orderId"
-                    element={<OrderConfirmationPage />}
-                  />
+            <CustomerProvider>
+              <ModalProvider>
+                <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200">
+                  <Routes>
+                    {/* Public Routes - Accessible to all users */}
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route
+                      path="/order-confirmation/:orderId"
+                      element={<OrderConfirmationPage />}
+                    />
 
-                  {/* Protected Routes - Require authentication */}
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProtectedRoute>
-                        <ProfilePage />
-                      </ProtectedRoute>
-                    }
-                  />
+                    {/* Protected Routes - Require authentication */}
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <ProfilePage />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  {/* Admin Routes - Require admin privileges */}
-                  <Route path="/admin/menu" element={<AdminMenuPage />} />
-                  <Route path="/admin/orders" element={<AdminOrdersPage />} />
-                </Routes>
-              </div>
-            </ModalProvider>
+                    {/* Admin Routes - Require admin privileges */}
+                    <Route path="/admin/menu" element={<AdminMenuPage />} />
+                    <Route path="/admin/orders" element={<AdminOrdersPage />} />
+                  </Routes>
+                </div>
+              </ModalProvider>
+            </CustomerProvider>
           </CartProvider>
         </AuthProvider>
       </BrowserRouter>

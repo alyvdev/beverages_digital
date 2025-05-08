@@ -19,8 +19,12 @@ export function MenuItemTable() {
   const fetchMenuItems = async () => {
     setIsLoading(true);
     try {
-      const items = await menuItemsApi.getAll();
-      setMenuItems(items);
+      const response = await menuItemsApi.getAll();
+      // Extract the items array from the pagination response
+      const menuItemsArray = Array.isArray(response.items)
+        ? response.items
+        : [];
+      setMenuItems(menuItemsArray);
     } catch (err) {
       setError("Failed to load menu items");
       console.error(err);

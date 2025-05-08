@@ -88,22 +88,18 @@ async function apiRequest<T>(
 
               return await apiRequest(endpoint, method, data);
             } catch {
+              // Clear local storage
               localStorage.removeItem("userEmail");
               localStorage.removeItem("authTimestamp");
 
-              document.cookie =
-                "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-              document.cookie =
-                "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+              // Let the server handle cookie deletion by calling logout endpoint
+              try {
+                await apiRequest<{ message: string }>("/auth/logout", "POST");
+              } catch (logoutError) {
+                console.error("Failed to logout properly:", logoutError);
+              }
 
-              document.cookie =
-                "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;";
-              document.cookie =
-                "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;";
-
-              document.cookie = "access_token=; max-age=0; path=/;";
-              document.cookie = "refresh_token=; max-age=0; path=/;";
-
+              // Redirect to login page
               window.location.href = "/login";
 
               throw new Error("Session expired: Please log in again");
@@ -179,10 +175,18 @@ async function apiRequest<T>(
 export const authApi = {
   login: (data: LoginRequest) => loginRequest(data),
   refresh: () => refreshTokenRequest(),
+  logout: () => apiRequest<{ message: string }>("/auth/logout", "POST"),
 };
 
 export const menuItemsApi = {
-  getAll: () => apiRequest<MenuItem[]>("/menu"),
+  getAll: () =>
+    apiRequest<{
+      items: MenuItem[];
+      total: number;
+      page: number;
+      page_size: number;
+      pages: number;
+    }>("/menu"),
 
   getById: (id: string) => apiRequest<MenuItem>(`/menu/item?item_id=${id}`),
 
@@ -225,6 +229,11 @@ export const coefficientLogApi = {
 
   getHistoryByItemId: (itemId: string) =>
     apiRequest<CoefficientLog[]>(`/coefficient/history?item_id=${itemId}`),
+
+  getPublicHistoryByItemId: (itemId: string) =>
+    apiRequest<CoefficientLog[]>(
+      `/coefficient/public/history?item_id=${itemId}`
+    ),
 };
 
 export const categoriesApi = {
