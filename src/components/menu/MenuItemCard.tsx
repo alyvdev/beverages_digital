@@ -11,17 +11,10 @@ interface MenuItemCardProps {
 export function MenuItemCard({ item }: MenuItemCardProps) {
   const { addItem } = useCart();
 
-  // Try to use the modal system, but provide a fallback if it's not available
-  let modalSystem;
-  try {
-    modalSystem = useModal();
-  } catch (error) {
-    console.warn("Modal system not available:", error);
-    modalSystem = {
-      openModal: () =>
-        alert("Price history feature is not available at the moment."),
-    };
-  }
+  // Always call hooks at the top level
+  const modalSystem = useModal();
+
+  // We'll handle any errors when we try to use the modal system
 
   const handleAddToCart = () => {
     addItem(item);
@@ -29,10 +22,15 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
 
   const showPriceHistory = () => {
     try {
-      modalSystem.openModal("priceHistory", {
-        itemId: item.id,
-        itemName: item.name,
-      });
+      if (modalSystem && typeof modalSystem.openModal === "function") {
+        modalSystem.openModal("priceHistory", {
+          itemId: item.id,
+          itemName: item.name,
+        });
+      } else {
+        console.warn("Modal system not available");
+        alert(`Price history for ${item.name} is not available at the moment.`);
+      }
     } catch (error) {
       console.error("Failed to open price history modal:", error);
       alert(`Price history for ${item.name} is not available at the moment.`);

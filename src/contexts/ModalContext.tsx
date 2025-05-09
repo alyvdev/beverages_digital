@@ -1,6 +1,5 @@
 import { useState, ReactNode } from "react";
 import { PriceHistoryGraph } from "@/components/menu/PriceHistoryGraph";
-import { FullscreenPriceHistoryModal } from "@/components/menu/FullscreenPriceHistoryModal";
 import { ModalContext, ModalType, ModalProps } from "./ModalContextType";
 
 // Provider component

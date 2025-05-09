@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { CoefficientLog } from "@/types";
 import { coefficientLogApi } from "@/lib/api";

@@ -9,9 +9,9 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { CoefficientLog, ChangeReason } from "@/types";
+import { CoefficientLog } from "@/types";
 import { coefficientLogApi } from "@/lib/api";
-import { LineChart as LineChartIcon, X, ArrowLeft, Info } from "lucide-react";
+import { LineChart as  ArrowLeft, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface FullscreenPriceHistoryModalProps {
@@ -101,22 +101,6 @@ export function FullscreenPriceHistoryModal({
 
   // Sort data chronologically
   chartData.sort((a, b) => a.date.getTime() - b.date.getTime());
-
-  // Get reason color
-  const getReasonColor = (reason: ChangeReason) => {
-    switch (reason) {
-      case ChangeReason.ORDERED:
-        return "#22c55e"; // green
-      case ChangeReason.DECAYED:
-        return "#f59e0b"; // amber
-      case ChangeReason.MANUAL_UPDATE:
-        return "#3b82f6"; // blue
-      case ChangeReason.CREATED:
-        return "#8b5cf6"; // purple
-      default:
-        return "#6b7280"; // gray
-    }
-  };
 
   // Custom tooltip component
   interface TooltipProps {
