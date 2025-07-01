@@ -10,10 +10,11 @@ import {
   CoefficientLog,
 } from "@/types";
 
-const API_URL = "http://localhost:8000";
+// Use relative URLs to leverage Vite's proxy configuration
+const API_PREFIX = "/api";
 
 async function loginRequest(data: LoginRequest): Promise<LoginResponse> {
-  const url = `${API_URL}/auth/login`;
+  const url = `${API_PREFIX}/auth/login`;
   const options: RequestInit = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -31,7 +32,7 @@ async function loginRequest(data: LoginRequest): Promise<LoginResponse> {
 }
 
 async function refreshTokenRequest(): Promise<LoginResponse> {
-  const url = `${API_URL}/auth/refresh`;
+  const url = `${API_PREFIX}/auth/refresh`;
   const options: RequestInit = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -54,7 +55,7 @@ async function apiRequest<T>(
   method: string = "GET",
   data?: unknown
 ): Promise<T> {
-  const url = `${API_URL}${endpoint}`;
+  const url = `${API_PREFIX}${endpoint}`;
 
   const options: RequestInit = {
     method,

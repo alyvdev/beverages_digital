@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from "lucide-react";
+import {
+  Minimize2,
+  Maximize2,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { menuItemsApi, coefficientLogApi } from "@/lib/api";
+import { Button } from "@/components/ui/button";
 
 interface StockChange {
   id: string;
@@ -9,6 +13,14 @@ interface StockChange {
   currentPrice: number;
   priceChange: number;
   percentageChange: number;
+  openPrice: number; // İlk fiyat
+  highPrice: number; // En yüksek fiyat
+  lowPrice: number; // En düşük fiyat
+}
+
+interface StockChangeTableProps {
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 // Yardımcı Formatlama Fonksiyonları
@@ -21,7 +33,10 @@ const formatPercentage = (value: number): string => {
   return `${sign}${value.toFixed(2)}%`;
 };
 
-export function StockChangeTable() {
+export function StockChangeTable({
+  isFullscreen = false,
+  onToggleFullscreen,
+}: StockChangeTableProps = {}) {
   const [stockChanges, setStockChanges] = useState<StockChange[]>([]);
   const [displayedChanges, setDisplayedChanges] = useState<StockChange[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,12 +84,22 @@ export function StockChangeTable() {
             const percentageChange =
               previousPrice === 0 ? 0 : (priceChange / previousPrice) * 100;
 
+            const allPrices = logs.map(
+              (log) => basePrice * Number(log.new_coefficient)
+            );
+            const openPrice = allPrices[allPrices.length - 1] || currentPrice;
+            const highPrice = Math.max(...allPrices);
+            const lowPrice = Math.min(...allPrices);
+
             newChanges.push({
               id: item.id,
               name: item.name,
               currentPrice,
               priceChange,
               percentageChange,
+              openPrice,
+              highPrice,
+              lowPrice,
             });
           } else {
             const currentPrice = Number(item.final_price) || 0;
@@ -85,6 +110,9 @@ export function StockChangeTable() {
               currentPrice,
               priceChange: 0,
               percentageChange: 0,
+              openPrice: currentPrice,
+              highPrice: currentPrice,
+              lowPrice: currentPrice,
             });
           }
         } catch (err) {
@@ -98,6 +126,9 @@ export function StockChangeTable() {
             currentPrice,
             priceChange: 0,
             percentageChange: 0,
+            openPrice: currentPrice,
+            highPrice: currentPrice,
+            lowPrice: currentPrice,
           });
         }
       }
@@ -151,7 +182,7 @@ export function StockChangeTable() {
       });
     };
 
-    const scrollInterval = 8000 + Math.random() * 2000;
+    const scrollInterval = 3000 + Math.random() * 2000;
     const intervalId = setInterval(scrollItems, scrollInterval);
 
     return () => clearInterval(intervalId);
@@ -159,14 +190,12 @@ export function StockChangeTable() {
 
   const renderPriceChangeIcon = (change: number) => {
     if (change > 0) {
-      return <ArrowUpIcon className="h-4 w-4 flex-shrink-0 text-price-up" />;
+      return <div className="triangle-up flex-shrink-0" />;
     }
     if (change < 0) {
-      return (
-        <ArrowDownIcon className="h-4 w-4 flex-shrink-0 text-price-down" />
-      );
+      return <div className="triangle-down flex-shrink-0" />;
     }
-    return <MinusIcon className="h-4 w-4 flex-shrink-0 text-price-neutral" />;
+    return <div className="triangle-neutral flex-shrink-0" />;
   };
 
   const getChangeTextColor = (change: number) => {
@@ -178,23 +207,51 @@ export function StockChangeTable() {
   if (isLoading) {
     return (
       <div
-        className="p-6 bg-card rounded-3xl shadow-md border border-border h-full"
+        className="p-6 stock-table-bg rounded-xl shadow-md border border-border h-full"
         style={{ position: "relative", isolation: "isolate" }}
       >
-        <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Today's Price Changes
-        </h2>
-        <div className="w-full">
-          <div className="grid grid-cols-12 border-b border-border mb-2">
-            <div className="col-span-5 text-left py-2 px-4 font-semibold">Item</div>
-            <div className="col-span-3 text-right py-2 px-4 font-semibold">
-              Price
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold font-mono text-yellow-400 tracking-wider">
+            LIVE MARKET PRICES
+          </h2>
+          {onToggleFullscreen && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleFullscreen}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              title={isFullscreen ? "Minimize table" : "Expand table"}
+            >
+              {isFullscreen ? (
+                <Minimize2 className="h-4 w-4" />
+              ) : (
+                <Maximize2 className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+        </div>
+        <div className="overflow-x-auto stock-table-scroll">
+          <div className="grid grid-cols-12 stock-header border-b-2 border-yellow-400 mb-2 min-w-[800px]">
+            <div className="col-span-3 text-left py-2 px-3 font-bold font-mono text-xs">
+              SYMBOL
             </div>
-            <div className="col-span-2 text-right py-2 px-4 font-semibold hidden sm:block">
-              Change
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              LAST
             </div>
-            <div className="col-span-2 text-right py-2 px-4 font-semibold">
-              % Change
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              CHANGE
+            </div>
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              % CHG
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              HIGH
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              LOW
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              OPEN
             </div>
           </div>
           <div
@@ -229,23 +286,51 @@ export function StockChangeTable() {
   if (error) {
     return (
       <div
-        className="p-6 bg-card rounded-3xl shadow-md border border-border h-full"
+        className="p-6 stock-table-bg rounded-xl shadow-md border border-border h-full"
         style={{ position: "relative", isolation: "isolate" }}
       >
-        <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Today's Price Changes
-        </h2>
-        <div className="w-full">
-          <div className="grid grid-cols-12 border-b border-border mb-2">
-            <div className="col-span-5 text-left py-2 px-4 font-semibold">Item</div>
-            <div className="col-span-3 text-right py-2 px-4 font-semibold">
-              Price
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold font-mono text-price-neutral tracking-wider">
+            LIVE MARKET PRICES
+          </h2>
+          {onToggleFullscreen && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleFullscreen}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              title={isFullscreen ? "Minimize table" : "Expand table"}
+            >
+              {isFullscreen ? (
+                <Minimize2 className="h-4 w-4" />
+              ) : (
+                <Maximize2 className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+        </div>
+        <div className="overflow-x-auto stock-table-scroll">
+          <div className="grid grid-cols-12 stock-header border-b-2 border-yellow-400 mb-2 min-w-[800px]">
+            <div className="col-span-3 text-left py-2 px-3 font-bold font-mono text-xs">
+              SYMBOL
             </div>
-            <div className="col-span-2 text-right py-2 px-4 font-semibold hidden sm:block">
-              Change
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              LAST
             </div>
-            <div className="col-span-2 text-right py-2 px-4 font-semibold">
-              % Change
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              CHANGE
+            </div>
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              % CHG
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              HIGH
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              LOW
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              OPEN
             </div>
           </div>
           <div
@@ -267,23 +352,51 @@ export function StockChangeTable() {
   if (stockChanges.length === 0) {
     return (
       <div
-        className="p-6 bg-card rounded-3xl shadow-md border border-border h-full"
+        className="p-6 stock-table-bg rounded-xl shadow-md border border-border h-full"
         style={{ position: "relative", isolation: "isolate" }}
       >
-        <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Today's Price Changes
-        </h2>
-        <div className="w-full">
-          <div className="grid grid-cols-12 border-b border-border mb-2">
-            <div className="col-span-5 text-left py-2 px-4 font-semibold">Item</div>
-            <div className="col-span-3 text-right py-2 px-4 font-semibold">
-              Price
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold font-mono text-price-neutral tracking-wider">
+            LIVE MARKET PRICES
+          </h2>
+          {onToggleFullscreen && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleFullscreen}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              title={isFullscreen ? "Minimize table" : "Expand table"}
+            >
+              {isFullscreen ? (
+                <Minimize2 className="h-4 w-4" />
+              ) : (
+                <Maximize2 className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+        </div>
+        <div className="overflow-x-auto stock-table-scroll">
+          <div className="grid grid-cols-12 stock-header border-b-2 border-yellow-400 mb-2 min-w-[800px]">
+            <div className="col-span-3 text-left py-2 px-3 font-bold font-mono text-xs">
+              SYMBOL
             </div>
-            <div className="col-span-2 text-right py-2 px-4 font-semibold hidden sm:block">
-              Change
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              LAST
             </div>
-            <div className="col-span-2 text-right py-2 px-4 font-semibold">
-              % Change
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              CHANGE
+            </div>
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              % CHG
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              HIGH
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              LOW
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              OPEN
             </div>
           </div>
           <div
@@ -304,29 +417,59 @@ export function StockChangeTable() {
 
   return (
     <div
-      className="p-6 bg-card rounded-3xl shadow-md border border-border h-full"
+      className="p-6 stock-table-bg rounded-xl shadow-md border border-border h-full"
       style={{ position: "relative", isolation: "isolate" }}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-        Today's Price Changes
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold font-mono text-price-neutral tracking-wider">
+          LIVE MARKET PRICES
+        </h2>
+        {onToggleFullscreen && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleFullscreen}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            title={isFullscreen ? "Minimize table" : "Expand table"}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="h-4 w-4" />
+            ) : (
+              <Maximize2 className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+      </div>
 
       <div
-        className="overflow-hidden"
+        className="overflow-x-auto overflow-y-hidden stock-table-scroll"
         style={{ height: `${maxDisplayItems * 53}px` }}
       >
-        <div className="w-full">
-          <div className="grid grid-cols-12 border-b border-border mb-2">
-            <div className="col-span-5 text-left py-2 px-4 font-semibold">Item</div>
-            <div className="col-span-3 text-right py-2 px-4 font-semibold">
-              Price
+        <div className="min-w-full">
+          <div className="grid grid-cols-12 stock-header border-b-2 border-yellow-400 mb-2 min-w-[800px]">
+            <div className="col-span-3 text-left py-2 px-3 font-bold font-mono text-xs">
+              SYMBOL
             </div>
-            <div className="col-span-2 text-right py-2 px-4 font-semibold hidden sm:block">
-              Change
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              LAST
             </div>
-            <div className="col-span-2 text-right py-2 px-4 font-semibold">%</div>
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              CHANGE
+            </div>
+            <div className="col-span-2 text-right py-2 px-2 font-bold font-mono text-xs">
+              % CHG
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              HIGH
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              LOW
+            </div>
+            <div className="col-span-1 text-right py-2 px-2 font-bold font-mono text-xs">
+              OPEN
+            </div>
           </div>
 
           <div
@@ -346,29 +489,33 @@ export function StockChangeTable() {
                     stiffness: 150,
                     damping: 20,
                   }}
-                  className="grid grid-cols-12 border-b border-border/50 hover:bg-muted/30 absolute w-full"
+                  className="grid grid-cols-12 border-b border-border/50 stock-row-hover absolute min-w-[800px]"
                   style={{
                     height: "53px",
                     top: `${index * 53}px`,
+                    width: "100%",
                   }}
                 >
-                  <div className="col-span-5 py-3 px-4 flex items-center">
-                    <div className="flex-shrink-0 w-6">
+                  <div className="col-span-3 py-3 px-3 flex items-center">
+                    <div className="flex-shrink-0 w-4">
                       {renderPriceChangeIcon(item.priceChange)}
                     </div>
-                    <span className="font-semibold truncate" title={item.name}>
-                      {item.name}
+                    <span
+                      className="font-bold font-mono text-xs truncate text-price-value ml-1"
+                      title={item.name}
+                    >
+                      {item.name.toUpperCase()}
                     </span>
                   </div>
 
-                  <div className="col-span-3 py-3 px-4 text-right">
-                    <span className="font-semibold font-mono text-price-value">
+                  <div className="col-span-2 py-3 px-2 text-right">
+                    <span className="font-bold font-mono text-xs text-price-value">
                       {formatCurrency(item.currentPrice)}
                     </span>
                   </div>
 
                   <div
-                    className={`col-span-2 py-3 px-4 text-right font-semibold hidden sm:block font-mono ${getChangeTextColor(
+                    className={`col-span-2 py-3 px-2 text-right font-bold font-mono text-xs ${getChangeTextColor(
                       item.priceChange
                     )}`}
                   >
@@ -377,11 +524,23 @@ export function StockChangeTable() {
                   </div>
 
                   <div
-                    className={`col-span-2 py-3 px-4 text-right font-semibold font-mono ${getChangeTextColor(
+                    className={`col-span-2 py-3 px-2 text-right font-bold font-mono text-xs ${getChangeTextColor(
                       item.percentageChange
                     )}`}
                   >
                     {formatPercentage(item.percentageChange)}
+                  </div>
+
+                  <div className="col-span-1 py-3 px-2 text-right font-bold font-mono text-xs text-price-value">
+                    {formatCurrency(item.highPrice)}
+                  </div>
+
+                  <div className="col-span-1 py-3 px-2 text-right font-bold font-mono text-xs text-price-value">
+                    {formatCurrency(item.lowPrice)}
+                  </div>
+
+                  <div className="col-span-1 py-3 px-2 text-right font-bold font-mono text-xs text-price-value">
+                    {formatCurrency(item.openPrice)}
                   </div>
                 </motion.div>
               ))}
@@ -390,8 +549,8 @@ export function StockChangeTable() {
         </div>
       </div>
 
-      <p className="text-xs mt-4 text-center text-price-neutral">
-        Prices update based on demand. Hover to pause.
+      <p className="text-xs mt-4 text-center text-price-neutral font-mono">
+        REAL-TIME MARKET DATA • HOVER TO PAUSE
       </p>
     </div>
   );

@@ -26,11 +26,15 @@
   --input: #e2e8f0;
   --ring: #6366f1;
 
-  /* Stock Change Colors - Light Mode */
-  --price-up: #dc2626; /* text-red-600 */
-  --price-down: #1ead52; /* text-green-600 */
-  --price-neutral: #4b5563; /* text-gray-600 */
-  --price-value: #0639a8; /* text-blue-600 */
+  /* Stock Change Colors - Light Mode - Custom */
+  --price-up: #ef4444; /* Bright red for gains */
+  --price-down: #22c55e; /* Bright green for losses */
+  --price-neutral: #eab308; /* Bright yellow for neutral/static text */
+  --price-value: #1e293b; /* Dark text for price values */
+  --stock-header-bg: #dc2626; /* Red header background */
+  --stock-header-text: #fbbf24; /* Yellow header text */
+  --stock-table-bg: #f8fafc; /* Light background for table */
+  --stock-row-hover: #f1f5f9; /* Light hover effect */
 
   /* Chart Colors */
   --chart-1: #6366f1;
@@ -90,11 +94,15 @@
   --input: #334155;
   --ring: #818cf8;
 
-  /* Stock Change Colors - Dark Mode */
-  --price-up: #f87171; /* text-destructive */
-  --price-down: #4ade80; /* text-green-500 */
-  --price-neutral: #94a3b8; /* text-muted-foreground */
-  --price-value: #818cf8; /* text-primary */
+  /* Stock Change Colors - Dark Mode - Custom */
+  --price-up: #ef4444; /* Bright red for gains */
+  --price-down: #22c55e; /* Bright green for losses */
+  --price-neutral: #eab308; /* Bright yellow for neutral/static text */
+  --price-value: #f1f5f9; /* Light text for price values */
+  --stock-header-bg: #dc2626; /* Red header background */
+  --stock-header-text: #fbbf24; /* Yellow header text */
+  --stock-table-bg: #1e293b; /* Dark background for table */
+  --stock-row-hover: #334155; /* Dark hover effect */
 
   /* Chart Colors */
   --chart-1: #818cf8;
@@ -326,4 +334,158 @@
 
 .text-price-value {
   color: var(--price-value);
+}
+
+/* Fullscreen table transitions */
+.table-fullscreen-transition {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.table-expand-animation {
+  animation: expandTable 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.table-minimize-animation {
+  animation: minimizeTable 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes expandTable {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+}
+
+@keyframes minimizeTable {
+  from {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Traditional Stock Market Triangle Arrows */
+.triangle-up {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 7px solid var(--price-up);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.triangle-down {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 7px solid var(--price-down);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.triangle-neutral {
+  width: 8px;
+  height: 1px;
+  background-color: var(--price-neutral);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Stock Market Header Styling */
+.stock-header {
+  background-color: var(--stock-header-bg);
+  color: var(--stock-header-text);
+}
+
+.stock-table-bg {
+  background-color: var(--stock-table-bg);
+  color: var(--price-value);
+}
+
+.stock-row-hover:hover {
+  background-color: var(--stock-row-hover);
+}
+
+/* Custom scrollbar for stock table */
+.stock-table-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.stock-table-scroll::-webkit-scrollbar-track {
+  background: var(--stock-table-bg);
+  border-radius: 3px;
+}
+
+.stock-table-scroll::-webkit-scrollbar-thumb {
+  background: var(--price-neutral);
+  border-radius: 3px;
+}
+
+.stock-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--stock-header-bg);
+}
+
+/* Ticker Tape Styles */
+.ticker-tape {
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.ticker-tape::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to right, var(--card), transparent);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.ticker-tape::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to left, var(--card), transparent);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.ticker-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0 2rem;
+  font-family: "Courier New", monospace;
+}
+
+.ticker-separator {
+  color: var(--muted-foreground);
+  margin: 0 1rem;
+}
+
+/* Ticker animation */
+@keyframes tickerScroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
